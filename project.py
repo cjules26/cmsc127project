@@ -1,6 +1,8 @@
 import mysql.connector as mariadb 
+from tabulate import tabulate
+import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='neverevernever', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -55,6 +57,10 @@ create_cursor.execute("""CREATE TABLE EXPENSE(
     CONSTRAINT deptfk FOREIGN KEY (userID) references PERSON(userID), 
     CONSTRAINT groupfk FOREIGN KEY (groupID) references GROUPING(groupID))""")
 
+create_cursor.execute("INSERT INTO GROUPING VALUES('G1', 'SPAM', 200, 90)")
+create_cursor.execute("INSERT INTO GROUPING VALUES('G2', 'MASK', 1200, 0)")
+create_cursor.execute("INSERT INTO GROUPING VALUES('G3', 'ROVER', 10.12, 90.23)")
+
 create_cursor.execute("SHOW TABLES")
 
 tables = create_cursor.fetchall()
@@ -65,6 +71,8 @@ else:
     print("TABLES:")
     for table in tables:
         print(" ", table[0])
+
+## USER FUNCTIONS
 
 def addUser():
     create_cursor.execute("SELECT COUNT(userID) FROM PERSON")
@@ -84,6 +92,8 @@ def addUser():
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
 
+## GROUP FUNCTIONS
+
 def addGroup():
     create_cursor.execute("SELECT COUNT(groupID) FROM GROUPING")
     row = create_cursor.fetchone()
@@ -101,34 +111,115 @@ def addGroup():
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
 
-# def deleteGroup(id):
-#     sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
-#     insert = id
-#     create_cursor.execute(sql_statement, insert)
-#     mariadb_connection.commit()
+def updateGroupName(id):
+    sql_statement = "SELECT groupName FROM GROUPING where groupID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Group Name: {result}")
+    new_group_name = input("Enter new group name: ")
+    sql_statement = "UPDATE grouping SET groupName = %s WHERE groupID = %s"
+    insert = (new_group_name, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
 
-# def groupMenu():
-#     choice = -1
-#     while (choice != 0):
-#         print("\n**********GROUP MENU*********")
-#         print("[1] Add Group")
-#         print("[2] Update Group")
-#         print("[3] Delete Group")
-#         print("[4] Update Group")
-#         print("[0] Return\n")
-#         choice = int(input("Please enter choice: "))
-#         if choice == 1:
-#             print(1)
-#             addGroup()
-#         elif choice == 2:
-#             print("2")
-#         elif choice == 3:
-#             groupID = input("Please enter groupID: ")
-#             deleteGroup(groupID)
-#         elif choice == 4:
-#             print()
-#         else:
-#             print("Invalid Choice!!!")
+def updateGroupMoneyOwed(id):
+    sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Group Money Owed: {result}")
+    updated_money_owed = int(input("Update money owed: "))
+    sql_statement = "UPDATE grouping SET moneyOwed = %s WHERE groupID = %s"
+    insert = (updated_money_owed, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+
+def updateGroupMoneyLent(id):
+    sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Group Money Lent: {result}")
+    updated_money_owed = int(input("Update money lent: "))
+    sql_statement = "UPDATE grouping SET moneyLent = %s WHERE groupID = %s"
+    insert = (updated_money_owed, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+
+def updateGroup(id) :
+    print("\n****SELECT UPDATE****")
+    print("[1] Update Group Name")
+    print("[2] Update Money Owed")
+    print("[3] Update Money Lent")
+    choice = input("\nPlease enter your choice: ")
+    if (choice == "1"):
+        updateGroupName(id)
+    elif (choice == "2"):
+        updateGroupMoneyOwed(id)
+    elif (choice == "3"):
+        updateGroupMoneyLent(id)
+    else:
+        print("INVALID CHOICE!!")
+        updateGroup(id)
+
+def showUpdateGroupMenu():
+    sql_statement = "SELECT groupID FROM GROUPING"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_groupId = input("Enter Group ID: ")
+    if (selected_groupId  in list_of_ids):
+        updateGroup(selected_groupId)
+    else:
+        print("Group ID not found!!!")
+        showUpdateGroupMenu()
+
+
+def deleteGroup(id):
+    print(id)
+    # sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
+    # insert = [id]
+    # create_cursor.execute(sql_statement, insert)
+    # mariadb_connection.commit()
+
+def viewAllGroups():
+    sql_statement = "SELECT * FROM GROUPING"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
+    for res in result:
+        group_data = [res[0], res[1], str(res[2]), str(res[3])]
+        table_data.append(group_data)
+    print("CURRENT GROUPS")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+## MENUS
+
+def groupMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********GROUP MENU*********")
+        print("[1] Add Group")
+        print("[2] Update Group")
+        print("[3] Delete Group")
+        print("[4] View All Groups")
+        print("[0] Return\n")
+        choice = int(input("Please enter choice: "))
+        if choice == 1:
+            print(1)
+            addGroup()
+        elif choice == 2:
+            showUpdateGroupMenu()
+        elif choice == 3:
+            groupID = input("Please enter groupID: ")
+            # print(type(groupID))
+            deleteGroup(groupID)
+        elif choice == 4:
+            viewAllGroups()
+        elif choice == 5:
+            viewAllGroups()
+        elif choice == 0:
+            return 0
+        else:
+            print("Invalid Choice!!!")
 
 def userMenu():
     choice = -1
