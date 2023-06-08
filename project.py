@@ -2,7 +2,7 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 # import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='mariadb', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -257,12 +257,19 @@ def showUpdateGroupMenu():
         showUpdateGroupMenu()
 
 
-def deleteGroup(id):
-    print(id)
-    # sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
-    # insert = [id]
-    # create_cursor.execute(sql_statement, insert)
-    # mariadb_connection.commit()
+def deleteGroup():
+    sql_statement = "SELECT groupID FROM GROUPING"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_groupId = input("Enter Group ID: ")
+    if (selected_groupId in list_of_ids):
+        sql_statement = "DELETE from grouping where groupID = %s"
+        create_cursor.execute(sql_statement, (selected_groupId,))
+        mariadb_connection.commit()
+    else:
+        print(f"{selected_groupId} was not found!")
+        
 
 def viewAllGroups():
     sql_statement = "SELECT * FROM GROUPING"
@@ -274,16 +281,6 @@ def viewAllGroups():
         table_data.append(group_data)
     print("CURRENT GROUPS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
-
-## MENUS
-# def deleteGroup(id):
-#     try:
-#         sql_statement = "DELETE FROM GROUPING WHERE groupID=%s"
-#         insert = (id,)
-#         create_cursor.execute(sql_statement, insert)
-#         mariadb_connection.commit()
-#     except mariadb.Error as e:
-#         print(f"Error occurred: {e}")
 
 def format_decimal(value):
     decimal_part = value % 1
@@ -320,10 +317,9 @@ def groupMenu():
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
-            print(1)
             addGroup()
         elif choice == 2:
-            print("2")
+            deleteGroup()
         elif choice == 3:
             print()
         elif choice == 4:
