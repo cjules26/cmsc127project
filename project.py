@@ -2,7 +2,7 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -607,24 +607,55 @@ def groupMenu():
             print("Invalid Choice!!!")
             continue
 
+def viewExpenseMadeWithinAMonth():
+    month = int(input("Enter Month in digits:"))
+    sql_statement = "SELECT* from expense where month(dateOwed) = %s"
+    create_cursor.execute(sql_statement,(month,))
+    result = create_cursor.fetchall()
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewUsersWithOutstandingBalance():
+    sql_statement ="SELECT* from person where moneyOwed >0 and userID !='U1'"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["userID", "First Name","Last Name", "Money Owed", "Money Lent", "borrowerID"]]
+    for res in result:
+        person_data = [res[0], res[1], res[2], str(res[3]), str(res[4]), res[5]]
+        table_data.append(person_data)
+    print("CURRENT PERSON(S) WITH OUTSTANDING BALANCE")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
 def reports():
     choice = -1
     while (choice != 0):
-        print("\n**********USER MENU*********")
-        print("[1] Add User")
-        print("[2] Update User")
-        print("[3] Search User with outstanding balance")
-        print("[4] Delete User")
+        print("\n**********REPORTS MENU*********")
+        print("[1] View all expenses made within a month")
+        print("[2] View all expenses made with a friend")
+        print("[3] View all expenses made with a group")
+        print("[4] View current balance from all expenses")
+        print("[5] View all friends with outstanding balance")
+        print("[6] View all groups")
+        print("[7] View all groups with an outstanding balance")
         print("[0] Return\n")
 
         choice = input("Please enter choice: ")  
 
         if choice == "1":
-            print()
+            viewExpenseMadeWithinAMonth()
         elif choice == "2":
-            showUpdatePersonMenu()
+            viewUserExpenses()
+        elif choice == "3":
+            viewGroupExpenses()
         elif choice == "4":
-            deletePerson()
+            print()
+        elif choice == "5":
+            viewUsersWithOutstandingBalance()
+        elif choice == "6":
+            viewAllGroups()
+        elif choice == "7":
+            viewGroupsWithOutstandingBalance()
         elif choice == "0":
             print()
             break
@@ -677,6 +708,8 @@ def menu():
             groupMenu()
         elif choice == "3":
             expenseMenu()
+        elif choice == "4":
+            reports()
         elif choice == "0":
             print()
             print("Thank you!\n")
