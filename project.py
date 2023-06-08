@@ -1,6 +1,5 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
-# import re
 
 mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
 
@@ -215,7 +214,7 @@ def searchPerson(id):
     print(" Money Owed:", format_decimal(person[3]))
     print(" Money Lent by Group:", format_decimal(person[4]))
     print(" borrowerID: ", person[5])
-    
+
 def userMenu():
     choice = -1
     while (choice != 0):
@@ -362,6 +361,18 @@ def viewAllGroups():
     print("CURRENT GROUPS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
+def viewGroupsWithOutstandingBalance():
+    sql_statement = "SELECT * FROM grouping WHERE moneyOwed>=0;"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
+    for res in result:
+        group_data = [res[0], res[1], str(res[2]), str(res[3])]
+        table_data.append(group_data)
+    print("GROUPS WITH OUTSTANDING BALANCE")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+    
+
 def format_decimal(value):
     decimal_part = value % 1
     # no decimal part to print
@@ -370,7 +381,7 @@ def format_decimal(value):
     else:
         return "%.2f" % value
 
-def viewGroup(id):
+def searchGroup(id):
     sql_statement = "SELECT * FROM grouping WHERE groupID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
@@ -389,6 +400,45 @@ def viewGroup(id):
     print(" Money Lent by Group:", format_decimal(group[3]))
     print(" Group Members:", ', '.join(memberNames))
 
+def viewExpense():
+    sql_statement = "SELECT expenseID FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_expenses = [expense[0] for expense in result]
+    selected_expenseId = input("Enter Expense ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_expenseId in list_of_expenses):
+        sql_statement = "SELECT * from EXPENSE where expenseID = %s"
+        create_cursor.execute(sql_statement, (selected_expenseId,))
+        expense_info =  create_cursor.fetchone()
+        table_data.append([expense_info[i] for i in range(0,8)])
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewAllExpenses():
+    sql_statement = "SELECT * FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewUserExpenses():
+    sql_statement = "SELECT userID FROM PERSON"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_userId = input("Enter User ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_userId in list_of_ids):
+        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        create_cursor.execute(sql_statement, (selected_userId, selected_userId))
+        result = create_cursor.fetchall()
+        [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewGroupExpenses():
+    print(1)
+
 def groupMenu():
     choice = -1
     while (choice != 0):
@@ -397,8 +447,8 @@ def groupMenu():
         print("[2] Delete Group")
         print("[3] Search Group")
         print("[4] Update Group")
-        print("[5] View Group")
-        print("[6] View All Groups")
+        print("[5] View All Groups")
+        print("[6] View Groups with Outstanding Balance")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
@@ -406,14 +456,14 @@ def groupMenu():
         elif choice == 2:
             deleteGroup()
         elif choice == 3:
-            print()
+            groupID = input("Please enter groupID: ")
+            searchGroup(groupID)
         elif choice == 4:
             showUpdateGroupMenu()
         elif choice == 5:
-            groupID = input("Please enter groupID: ")
-            viewGroup(groupID)
-        elif choice == 6:
             viewAllGroups()
+        elif choice == 6:
+            viewGroupsWithOutstandingBalance()
         elif choice == 0:
             print()
         else:
@@ -422,18 +472,44 @@ def groupMenu():
 def reports():
     choice = -1
     while (choice != 0):
-        print("\n**********REPORTS MENU*********")
-        print("[1] View Expenses Made Within a Month")
-        print("[2] View Expenses Made With a Friend")
-        print("[3] View All Expenses Made With a Group")
+        print("\n**********USER MENU*********")
+        print("[1] Add User")
+        print("[2] Update User")
+        print("[3] Search User with outstanding balance")
+        print("[4] Delete User")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
             print()
         elif choice == 2:
-            print()
+            userID = input("Enter userID: ")
+            updatePerson(userID)
+        elif choice == 4:
+            userID = input("Enter userID: ")
+            deletePerson(userID)
+        elif choice == 0:
+            break
+        else:
+            print("Invalid Choice!!!")
+
+def expenseMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********EXPENSE MENU*********")
+        print("[1] View Expense")
+        print("[2] View All Expenses")
+        print("[3] View User Expense")
+        print("[4] View Group Expense")
+        print("[0] Return\n")
+        choice = int(input("Please enter choice: "))
+        if choice == 1:
+            viewExpense()
+        elif choice == 2:
+            viewAllExpenses()
         elif choice == 3:
-            print()
+            viewUserExpenses()
+        elif choice == 4:
+            viewGroupExpenses()
         elif choice == 0:
             break
         else:
@@ -454,9 +530,7 @@ def menu():
         elif choice == 2:
             groupMenu()
         elif choice == 3:
-            print("3")
-        elif choice ==4:
-            reports()
+            expenseMenu()
         elif choice == 0:
             print("Thank you!")
         else:
