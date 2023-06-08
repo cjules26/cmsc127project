@@ -57,9 +57,32 @@ create_cursor.execute("""CREATE TABLE EXPENSE(
     CONSTRAINT deptfk FOREIGN KEY (userID) references PERSON(userID), 
     CONSTRAINT groupfk FOREIGN KEY (groupID) references GROUPING(groupID))""")
 
-create_cursor.execute("INSERT INTO GROUPING VALUES('G1', 'SPAM', 200, 90)")
-create_cursor.execute("INSERT INTO GROUPING VALUES('G2', 'MASK', 1200, 0)")
-create_cursor.execute("INSERT INTO GROUPING VALUES('G3', 'ROVER', 10.12, 90.23)")
+# Execute multiple SQL statements individually
+statements = [
+    'INSERT INTO person VALUES("U1", "Mario", "Beatles", -100, 300, NULL);',
+    'INSERT INTO person VALUES("U2", "Lea", "Smith", -30, 130, "U1");',
+    'INSERT INTO person VALUES("U3", "Sophia", "Brown", -400, 500, "U1");',
+    'INSERT INTO person VALUES("U4", "Daniel", "Taft", -1500, 1500, "U1");',
+    'INSERT INTO person VALUES("U5", "Olivia", "Davis", 400, 0, "U1");',
+    'INSERT INTO GROUPING VALUES("G1", "AAA", 8000, 2000);',
+    'INSERT INTO GROUPING VALUES("G2", "BBB", 11000, 4000);',
+    'INSERT INTO group_member VALUES("G1", "U1");',
+    'INSERT INTO group_member VALUES("G1", "U2");',
+    'INSERT INTO group_member VALUES("G2", "U5");',
+    'INSERT INTO group_member VALUES("G1", "U3");',
+    'INSERT INTO group_member VALUES("G2", "U4");',
+    'INSERT INTO EXPENSE VALUES ("E1", 10000, "U3","U1", "2021-07-12", "2021-07-20", "U1", null);',
+    'INSERT INTO EXPENSE VALUES ("E2", 20000, "U1","U2" , "2022-01-12", "2022-09-26", "U1", null);',
+    'INSERT INTO EXPENSE VALUES ("E3", 1000, "U4", "U1", "2010-01-02", "2012-11-19", "U1", null);',
+    'INSERT INTO EXPENSE VALUES ("E4", 1050, "U5", "U1", "2021-07-20", null, "U1", null);',
+    'INSERT INTO EXPENSE VALUES ("E5", 120, "G2","U1", "2019-07-12", null, "U1","G2");',
+    'INSERT INTO EXPENSE VALUES ("E6", 150, "U1","G1", "2019-07-12", null, "U1","G1");',
+    'INSERT INTO EXPENSE VALUES ("E7", 150, "U1","G1", "2019-07-12", null, "U1","G1");',
+    'INSERT INTO EXPENSE VALUES ("E8", 150, "U1","G2", "2019-07-12", null, "U1","G2");',
+]
+
+for statement in statements:
+    create_cursor.execute(statement)
 
 create_cursor.execute("SHOW TABLES")
 
@@ -291,18 +314,23 @@ def format_decimal(value):
         return "%.2f" % value
 
 def viewGroup(id):
-    sql_statement = "SELECT * FROM GROUPING WHERE groupID=%s"
+    sql_statement = "SELECT * FROM grouping WHERE groupID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
     group =  create_cursor.fetchone()
+
+    sql_statement = "SELECT fName, lName FROM grouping NATURAL JOIN group_member JOIN person ON group_member.memberID=person.userID where groupID=%s"
+    sql_data = (id,)
+    create_cursor.execute(sql_statement, sql_data)
+    memberNames =  create_cursor.fetchall()
+    memberNames = [member[0] + ' ' + member[1] for member in memberNames]
 
     print("\nVIEWING GROUP...\n")
     print(" Group ID:", group[0])
     print(" Group Name:", group[1])
     print(" Money Owed by Group:", format_decimal(group[2]))
     print(" Money Lent by Group:", format_decimal(group[3]))
-    
-    mariadb_connection.commit()
+    print(" Group Members:", ', '.join(memberNames))
 
 def groupMenu():
     choice = -1
