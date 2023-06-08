@@ -102,33 +102,64 @@ def addGroup():
     mariadb_connection.commit()
 
 # def deleteGroup(id):
-#     sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
-#     insert = id
-#     create_cursor.execute(sql_statement, insert)
-#     mariadb_connection.commit()
+#     try:
+#         sql_statement = "DELETE FROM GROUPING WHERE groupID=%s"
+#         insert = (id,)
+#         create_cursor.execute(sql_statement, insert)
+#         mariadb_connection.commit()
+#     except mariadb.Error as e:
+#         print(f"Error occurred: {e}")
 
-# def groupMenu():
-#     choice = -1
-#     while (choice != 0):
-#         print("\n**********GROUP MENU*********")
-#         print("[1] Add Group")
-#         print("[2] Update Group")
-#         print("[3] Delete Group")
-#         print("[4] Update Group")
-#         print("[0] Return\n")
-#         choice = int(input("Please enter choice: "))
-#         if choice == 1:
-#             print(1)
-#             addGroup()
-#         elif choice == 2:
-#             print("2")
-#         elif choice == 3:
-#             groupID = input("Please enter groupID: ")
-#             deleteGroup(groupID)
-#         elif choice == 4:
-#             print()
-#         else:
-#             print("Invalid Choice!!!")
+def format_decimal(value):
+    decimal_part = value % 1
+    # no decimal part to print
+    if decimal_part == 0:
+        return "%.0f" % value
+    else:
+        return "%.2f" % value
+
+def viewGroup(id):
+    sql_statement = "SELECT * FROM GROUPING WHERE groupID=%s"
+    sql_data = (id,)
+    create_cursor.execute(sql_statement, sql_data)
+    group =  create_cursor.fetchone()
+
+    print("\nVIEWING GROUP...\n")
+    print(" Group ID:", group[0])
+    print(" Group Name:", group[1])
+    print(" Money Owed by Group:", format_decimal(group[2]))
+    print(" Money Lent by Group:", format_decimal(group[3]))
+    
+    mariadb_connection.commit()
+
+def groupMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********GROUP MENU*********")
+        print("[1] Add Group")
+        print("[2] Delete Group")
+        print("[3] Search Group")
+        print("[4] Update Group")
+        print("[5] View Group")
+        print("[0] Return\n")
+        choice = int(input("Please enter choice: "))
+        if choice == 1:
+            print(1)
+            addGroup()
+        elif choice == 2:
+            print("2")
+        elif choice == 3:
+            print()
+        elif choice == 4:
+            groupID = input("Please enter groupID: ")
+            deleteGroup(groupID)
+        elif choice == 5:
+            groupID = input("Please enter groupID: ")
+            viewGroup(groupID)
+        elif choice == 0:
+            print()
+        else:
+            print("Invalid Choice!!!")
 
 def userMenu():
     choice = -1
