@@ -1,8 +1,8 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
-import re
+# import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -80,16 +80,24 @@ def addUser():
     userIDcount = row[0] if row else 0
     if userIDcount == 0:
         userID = "U1"
+        fName = input("Enter First Name: ")
+        lName = input("Enter Last Name: ")
+        moneyOwed = float(input("Enter Money Owed: "))
+        moneyLent = float(input("Enter Money Lent: "))
+        sql_statement = 'INSERT INTO PERSON(userId,fName,lName,moneyOwed,moneyLent) VALUES(%s,%s,%s,%s,%s)'
+        insert = (userID,fName,lName,moneyOwed,moneyLent)
+        create_cursor.execute(sql_statement, insert)
     else:
         userID = "U" + str(userIDcount + 1)
-        
-    fName = input("Enter First Name: ")
-    lName = input("Enter Last Name: ")
-    moneyOwed = float(input("Enter Money Owed: "))
-    moneyLent = float(input("Enter Money Lent: "))
-    sql_statement = 'INSERT INTO PERSON(userId,fName,lName,moneyOwed,moneyLent) VALUES(%s,%s,%s,%s,%s)'
-    insert = (userID,fName,lName,moneyOwed,moneyLent)
-    create_cursor.execute(sql_statement, insert)
+        fName = input("Enter First Name: ")
+        lName = input("Enter Last Name: ")
+        moneyOwed = float(input("Enter Money Owed: "))
+        moneyLent = float(input("Enter Money Lent: "))
+        borrowerId = input("Enter borrower ID: ")
+        sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s,%s)'
+        insert = (userID,fName,lName,moneyOwed,moneyLent,borrowerId)
+        create_cursor.execute(sql_statement, insert)
+    print("\nSuccessfully added User!\n")
     mariadb_connection.commit()
 
 ## GROUP FUNCTIONS
@@ -268,7 +276,6 @@ def userMenu():
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
-            print(1)
             addUser()
         elif choice == 2:
             print("2")
