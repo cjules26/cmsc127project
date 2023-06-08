@@ -1,8 +1,7 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
-# import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -346,6 +345,45 @@ def searchGroup(id):
     print(" Money Lent by Group:", format_decimal(group[3]))
     print(" Group Members:", ', '.join(memberNames))
 
+def viewExpense():
+    sql_statement = "SELECT expenseID FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_expenses = [expense[0] for expense in result]
+    selected_expenseId = input("Enter Expense ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_expenseId in list_of_expenses):
+        sql_statement = "SELECT * from EXPENSE where expenseID = %s"
+        create_cursor.execute(sql_statement, (selected_expenseId,))
+        expense_info =  create_cursor.fetchone()
+        table_data.append([expense_info[i] for i in range(0,8)])
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewAllExpenses():
+    sql_statement = "SELECT * FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewUserExpenses():
+    sql_statement = "SELECT userID FROM PERSON"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_userId = input("Enter User ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_userId in list_of_ids):
+        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        create_cursor.execute(sql_statement, (selected_userId, selected_userId))
+        result = create_cursor.fetchall()
+        [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def viewGroupExpenses():
+    print(1)
+
 def groupMenu():
     choice = -1
     while (choice != 0):
@@ -399,6 +437,29 @@ def userMenu():
         else:
             print("Invalid Choice!!!")
 
+def expenseMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********EXPENSE MENU*********")
+        print("[1] View Expense")
+        print("[2] View All Expenses")
+        print("[3] View User Expense")
+        print("[4] View Group Expense")
+        print("[0] Return\n")
+        choice = int(input("Please enter choice: "))
+        if choice == 1:
+            viewExpense()
+        elif choice == 2:
+            viewAllExpenses()
+        elif choice == 3:
+            viewUserExpenses()
+        elif choice == 4:
+            viewGroupExpenses()
+        elif choice == 0:
+            break
+        else:
+            print("Invalid Choice!!!")
+
 def menu():
     choice = -1
     while (choice != 0):
@@ -413,7 +474,7 @@ def menu():
         elif choice == 2:
             groupMenu()
         elif choice == 3:
-            print("3")
+            expenseMenu()
         elif choice == 0:
             print("Thank you!")
         else:
