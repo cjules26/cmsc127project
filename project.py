@@ -307,6 +307,18 @@ def viewAllGroups():
     print("CURRENT GROUPS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
+def viewGroupsWithOutstandingBalance():
+    sql_statement = "SELECT * FROM grouping WHERE moneyOwed>=0;"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
+    for res in result:
+        group_data = [res[0], res[1], str(res[2]), str(res[3])]
+        table_data.append(group_data)
+    print("GROUPS WITH OUTSTANDING BALANCE")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+    
+
 def format_decimal(value):
     decimal_part = value % 1
     # no decimal part to print
@@ -315,7 +327,7 @@ def format_decimal(value):
     else:
         return "%.2f" % value
 
-def viewGroup(id):
+def searchGroup(id):
     sql_statement = "SELECT * FROM grouping WHERE groupID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
@@ -342,8 +354,8 @@ def groupMenu():
         print("[2] Delete Group")
         print("[3] Search Group")
         print("[4] Update Group")
-        print("[5] View Group")
-        print("[6] View All Groups")
+        print("[5] View All Groups")
+        print("[6] View Groups with Outstanding Balance")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
@@ -351,14 +363,14 @@ def groupMenu():
         elif choice == 2:
             deleteGroup()
         elif choice == 3:
-            print()
+            groupID = input("Please enter groupID: ")
+            searchGroup(groupID)
         elif choice == 4:
             showUpdateGroupMenu()
         elif choice == 5:
-            groupID = input("Please enter groupID: ")
-            viewGroup(groupID)
-        elif choice == 6:
             viewAllGroups()
+        elif choice == 6:
+            viewGroupsWithOutstandingBalance()
         elif choice == 0:
             print()
         else:
@@ -370,7 +382,8 @@ def userMenu():
         print("\n**********USER MENU*********")
         print("[1] Add User")
         print("[2] Update User")
-        print("[3] Delete User")
+        print("[3] Search User with outstanding balance")
+        print("[4] Delete User")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
@@ -378,7 +391,7 @@ def userMenu():
         elif choice == 2:
             userID = input("Enter userID: ")
             updatePerson(userID)
-        elif choice == 3:
+        elif choice == 4:
             userID = input("Enter userID: ")
             deletePerson(userID)
         elif choice == 0:
