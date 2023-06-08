@@ -97,8 +97,75 @@ def addUser():
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s,%s)'
         insert = (userID,fName,lName,moneyOwed,moneyLent,borrowerId)
         create_cursor.execute(sql_statement, insert)
-    print("\nSuccessfully added User!\n")
+    print("\nSuccessfully added Person!\n")
     mariadb_connection.commit()
+
+def updateFirstName(id):
+    sql_statement = "SELECT fName FROM person where userID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} First Name: {result}")
+    new_first_name = input("Enter new First Name: ")
+    sql_statement = "UPDATE person SET fName = %s WHERE userID = %s"
+    insert = (new_first_name, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+    print(f"\nSuccessfully updated {id}'s First Name!\n")
+
+def updateLastName(id):
+    sql_statement = "SELECT lName FROM person where userID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Last Name: {result}")
+    new_last_name = input("Enter new Last Name: ")
+    sql_statement = "UPDATE person SET lName = %s WHERE userID = %s"
+    insert = (new_last_name, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+    print(f"\nSuccessfully updated {id}'s Last Name!\n")
+
+def updatePersonMoneyOwed(id):
+    sql_statement = "SELECT moneyOwed FROM person where userID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Money Owed: {result}")
+    updated_money_owed = int(input("Update Money Owed: "))
+    sql_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
+    insert = (updated_money_owed, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
+
+def updatePersonMoneyLent(id):
+    sql_statement = "SELECT moneyLent FROM person where userID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()[0]
+    print(f"\nCurrent {id} Money Lent: {result}")
+    updated_money_lent = int(input("Update Money Lent: "))
+    sql_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
+    insert = (updated_money_lent, id)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
+
+def updatePerson(id):
+    print("\n****SELECT UPDATE****")
+    print("[1] Update First Name")
+    print("[2] Update Last Name")
+    print("[3] Update Money Owed")
+    print("[4] Update Money Lent")
+    choice = input("\nPlease enter your choice: ")
+    if (choice == "1"):
+        updateFirstName(id)
+    elif (choice =="2"):
+        updateLastName(id)
+    elif (choice == "3"):
+        updatePersonMoneyOwed(id)
+    elif (choice == "4"):
+        updatePersonMoneyLent(id)
+    else:
+        print("INVALID CHOICE!!")
+        updateGroup(id)
 
 ## GROUP FUNCTIONS
 
@@ -272,17 +339,15 @@ def userMenu():
         print("[1] Add User")
         print("[2] Update User")
         print("[3] Delete User")
-        print("[4] Update User")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
             addUser()
         elif choice == 2:
-            print("2")
+            userID = input("Enter userID: ")
+            updatePerson(userID)
         elif choice == 3:
             print("3")
-        elif choice == 4:
-            print()
         elif choice == 0:
             print()
         else:
