@@ -84,6 +84,8 @@ statements = [
 for statement in statements:
     create_cursor.execute(statement)
 
+mariadb_connection.commit()
+
 create_cursor.execute("SHOW TABLES")
 
 tables = create_cursor.fetchall()
