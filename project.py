@@ -1,7 +1,8 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
+import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='mariadb', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -153,7 +154,13 @@ def updatePersonMoneyOwed(id):
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
     print(f"\nCurrent {id} Money Owed: {result}")
-    updated_money_owed = int(input("Update Money Owed: "))
+    updated_money_owed = 0.0
+    while True:
+        try:
+            updated_money_owed = float(input("Update Money Owed: "))
+            break
+        except:
+            print("Invalid input.")
     sql_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
@@ -165,31 +172,58 @@ def updatePersonMoneyLent(id):
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
     print(f"\nCurrent {id} Money Lent: {result}")
-    updated_money_lent = int(input("Update Money Lent: "))
+    updated_money_lent = 0.0
+    while True:
+        try:
+            updated_money_lent = float(input("Update Money Lent: "))
+            break
+        except:
+            print("Invalid input.")
+        
     sql_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
     insert = (updated_money_lent, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
-def updatePerson(id):
-    print("\n****SELECT UPDATE****")
-    print("[1] Update First Name")
-    print("[2] Update Last Name")
-    print("[3] Update Money Owed")
-    print("[4] Update Money Lent")
-    choice = input("\nPlease enter your choice: ")
-    if (choice == "1"):
-        updateFirstName(id)
-    elif (choice =="2"):
-        updateLastName(id)
-    elif (choice == "3"):
-        updatePersonMoneyOwed(id)
-    elif (choice == "4"):
-        updatePersonMoneyLent(id)
-    else:
-        print("INVALID CHOICE!!")
-        updatePerson(id)
+def showUpdatePersonMenu():
+    while True:
+        sql_statement = "SELECT userID FROM person"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
+
+        id = input("Enter userID: ")
+        if not re.match(r'^U\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("User ID not found!")
+            return
+        else:
+            break
+
+    while(True):
+        print("\n****SELECT UPDATE****")
+        print("[1] Update First Name")
+        print("[2] Update Last Name")
+        print("[3] Update Money Owed")
+        print("[4] Update Money Lent")
+            
+        choice = input("Please enter choice: ") 
+
+        if (choice == "1"):
+            updateFirstName(id)
+        elif (choice =="2"):
+            updateLastName(id)
+        elif (choice == "3"):
+            updatePersonMoneyOwed(id)
+        elif (choice == "4"):
+            updatePersonMoneyLent(id)
+        else:
+            print("INVALID CHOICE!!")
+            continue
+        print()
+        break
 
 def viewAllPerson():
     sql_statement = "SELECT * FROM person"
@@ -202,7 +236,22 @@ def viewAllPerson():
     print("CURRENT PERSONS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
-def searchPerson(id):
+def searchPerson():
+    while True:
+        sql_statement = "SELECT userID FROM person"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
+
+        id = input("Enter userID: ")
+        if not re.match(r'^U\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("User ID not found!")
+            return
+        else:
+            break
+        
     sql_statement = "SELECT * FROM person WHERE userID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
@@ -225,25 +274,25 @@ def userMenu():
         print("[4] Search User")
         print("[5] View All Users")
         print("[0] Return\n")
-        choice = int(input("Please enter choice: "))
-        if choice == 1:
+        
+        choice = input("Please enter choice: ")  
+
+        if choice == "1":
             addUser()
-        elif choice == 2:
-            userID = input("Enter userID: ")
-            updatePerson(userID)
-        elif choice == 3:
-            userID = input("Enter userID: ")
-            deletePerson(userID)
-        elif choice == 4:
-            userID = input("Enter userID: ")
-            searchPerson(userID)
-        elif choice ==5:
+        elif choice == "2":
+            showUpdatePersonMenu()
+        elif choice == "3":
+            deletePerson()
+        elif choice == "4":
+            searchPerson()
+        elif choice == "5":
             viewAllPerson()
-        elif choice == 0:
+        elif choice == "0":
+            print()
             break
         else:
             print("Invalid Choice!!!")
-            userMenu()
+            continue
 
 
 ## GROUP FUNCTIONS
@@ -282,7 +331,13 @@ def updateGroupMoneyOwed(id):
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
     print(f"\nCurrent {id} Group Money Owed: {result}")
-    updated_money_owed = int(input("Update money owed: "))
+    updated_money_owed = 0.0
+    while True:
+        try:
+            updated_money_owed = float(input("Update Money Owed: "))
+            break
+        except:
+            print("Invalid input.")
     sql_statement = "UPDATE grouping SET moneyOwed = %s WHERE groupID = %s"
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
@@ -294,49 +349,91 @@ def updateGroupMoneyLent(id):
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
     print(f"\nCurrent {id} Group Money Lent: {result}")
-    updated_money_owed = int(input("Update money lent: "))
+    updated_money_lent = 0.0
+    while True:
+        try:
+            updated_money_lent = float(input("Update Money Lent: "))
+            break
+        except:
+            print("Invalid input.")
     sql_statement = "UPDATE grouping SET moneyLent = %s WHERE groupID = %s"
-    insert = (updated_money_owed, id)
+    insert = (updated_money_lent, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
-def deletePerson(id):
+def deletePerson():
+    while True:
+        sql_statement = "SELECT userID FROM person"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
+
+        id = input("Enter userID: ")
+        if not re.match(r'^U\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("User ID not found!")
+            return
+        else:
+            break
+
     sql_statement = "DELETE from person where userID = %s"
     create_cursor.execute(sql_statement,(id,))
     mariadb_connection.commit()
     print("Successfully deleted!")
 
-def updateGroup(id) :
-    print("\n****SELECT UPDATE****")
-    print("[1] Update Group Name")
-    print("[2] Update Money Owed")
-    print("[3] Update Money Lent")
-    choice = input("\nPlease enter your choice: ")
-    if (choice == "1"):
-        updateGroupName(id)
-    elif (choice == "2"):
-        updateGroupMoneyOwed(id)
-    elif (choice == "3"):
-        updateGroupMoneyLent(id)
-    else:
-        print("INVALID CHOICE!!")
-        updateGroup(id)
-
 def showUpdateGroupMenu():
-    sql_statement = "SELECT groupID FROM GROUPING"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
-    selected_groupId = input("Enter Group ID: ")
-    if (selected_groupId  in list_of_ids):
-        updateGroup(selected_groupId)
-    else:
-        print("Group ID not found!!!")
-        showUpdateGroupMenu()
+    while True:
+        sql_statement = "SELECT groupID FROM grouping"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
 
+        id = input("Enter groupID: ")
+        if not re.match(r'^G\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("Group ID not found!")
+            return
+        else:
+            break
+    
+    while(True):
+        print("\n****SELECT UPDATE****")
+        print("[1] Update Group Name")
+        print("[2] Update Money Owed")
+        print("[3] Update Money Lent")
+
+        choice = input("\nPlease enter your choice: ")
+
+        if (choice == "1"):
+            updateGroupName(id)
+        elif (choice == "2"):
+            updateGroupMoneyOwed(id)
+        elif (choice == "3"):
+            updateGroupMoneyLent(id)
+        else:
+            print("INVALID CHOICE!!")
+            continue
+        break
 
 def deleteGroup():
+    while True:
+        sql_statement = "SELECT groupID FROM grouping"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
+
+        id = input("Enter groupID: ")
+        if not re.match(r'^G\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("Group ID not found!")
+            return
+        else:
+            break
+
     sql_statement = "SELECT groupID FROM GROUPING"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
@@ -362,7 +459,7 @@ def viewAllGroups():
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupsWithOutstandingBalance():
-    sql_statement = "SELECT * FROM grouping WHERE moneyOwed>=0;"
+    sql_statement = "SELECT * FROM grouping WHERE moneyOwed>0;"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
     table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
@@ -381,7 +478,22 @@ def format_decimal(value):
     else:
         return "%.2f" % value
 
-def searchGroup(id):
+def searchGroup():
+    while True:
+        sql_statement = "SELECT groupID FROM grouping"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        userIds = [item[0] for item in result]
+
+        id = input("Enter groupID: ")
+        if not re.match(r'^G\d+$', id):
+            print("Invalid input")
+        elif id not in userIds:
+            print("Group ID not found!")
+            return
+        else:
+            break
+    
     sql_statement = "SELECT * FROM grouping WHERE groupID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
@@ -411,7 +523,7 @@ def viewExpense():
         sql_statement = "SELECT * from EXPENSE where expenseID = %s"
         create_cursor.execute(sql_statement, (selected_expenseId,))
         expense_info =  create_cursor.fetchone()
-        table_data.append([expense_info[i] for i in range(0,8)])
+        table_data.append([expense_info[i] for i in range(0,len(table_data[0]))])
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewAllExpenses():
@@ -419,7 +531,7 @@ def viewAllExpenses():
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
-    [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewUserExpenses():
@@ -433,11 +545,22 @@ def viewUserExpenses():
         sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
         create_cursor.execute(sql_statement, (selected_userId, selected_userId))
         result = create_cursor.fetchall()
-        [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+        [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupExpenses():
-    print(1)
+    sql_statement = "SELECT userID FROM PERSON"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_userId = input("Enter User ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_userId in list_of_ids):
+        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        create_cursor.execute(sql_statement, (selected_userId, selected_userId))
+        result = create_cursor.fetchall()
+        [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def groupMenu():
     choice = -1
@@ -450,24 +573,27 @@ def groupMenu():
         print("[5] View All Groups")
         print("[6] View Groups with Outstanding Balance")
         print("[0] Return\n")
-        choice = int(input("Please enter choice: "))
-        if choice == 1:
+
+        choice = input("Please enter choice: ") 
+
+        if choice == "1":
             addGroup()
-        elif choice == 2:
+        elif choice == "2":
             deleteGroup()
-        elif choice == 3:
-            groupID = input("Please enter groupID: ")
-            searchGroup(groupID)
-        elif choice == 4:
+        elif choice == "3":
+            searchGroup()
+        elif choice == "4":
             showUpdateGroupMenu()
-        elif choice == 5:
+        elif choice == "5":
             viewAllGroups()
-        elif choice == 6:
+        elif choice == "6":
             viewGroupsWithOutstandingBalance()
-        elif choice == 0:
+        elif choice == "0":
             print()
+            break
         else:
             print("Invalid Choice!!!")
+            continue
 
 def reports():
     choice = -1
@@ -478,19 +604,21 @@ def reports():
         print("[3] Search User with outstanding balance")
         print("[4] Delete User")
         print("[0] Return\n")
-        choice = int(input("Please enter choice: "))
-        if choice == 1:
+
+        choice = input("Please enter choice: ")  
+
+        if choice == "1":
             print()
-        elif choice == 2:
-            userID = input("Enter userID: ")
-            updatePerson(userID)
-        elif choice == 4:
-            userID = input("Enter userID: ")
-            deletePerson(userID)
-        elif choice == 0:
+        elif choice == "2":
+            showUpdatePersonMenu()
+        elif choice == "4":
+            deletePerson()
+        elif choice == "0":
+            print()
             break
         else:
             print("Invalid Choice!!!")
+            continue
 
 def expenseMenu():
     choice = -1
@@ -501,19 +629,23 @@ def expenseMenu():
         print("[3] View User Expense")
         print("[4] View Group Expense")
         print("[0] Return\n")
-        choice = int(input("Please enter choice: "))
-        if choice == 1:
+        
+        choice = input("Please enter choice: ")
+
+        if choice == "1":
             viewExpense()
-        elif choice == 2:
+        elif choice == "2":
             viewAllExpenses()
-        elif choice == 3:
+        elif choice == "3":
             viewUserExpenses()
-        elif choice == 4:
+        elif choice == "4":
             viewGroupExpenses()
-        elif choice == 0:
+        elif choice == "0":
+            print()
             break
         else:
             print("Invalid Choice!!!")
+            continue
 
 def menu():
     choice = -1
@@ -524,17 +656,22 @@ def menu():
         print("[3] Expense")
         print("[4] Generate Reports")
         print("[0] Exit\n")
-        choice = int(input("Please enter choice: "))
-        if choice == 1:
+        
+        choice = input("Please enter choice: ") 
+        
+        if choice == "1":
             userMenu()
-        elif choice == 2:
+        elif choice == "2":
             groupMenu()
-        elif choice == 3:
+        elif choice == "3":
             expenseMenu()
-        elif choice == 0:
-            print("Thank you!")
+        elif choice == "0":
+            print()
+            print("Thank you!\n")
+            break
         else:
             print("Invalid Choice!!!")
+            continue
 
 
 menu()
