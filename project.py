@@ -1,7 +1,7 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='neverevernever', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -347,7 +347,7 @@ def deleteGroup():
         create_cursor.execute(sql_statement, (selected_groupId,))
         mariadb_connection.commit()
     else:
-        print(f"{selected_groupId} was not found!")
+        print(f"GRPUD ID {selected_groupId} was not found!")
         
 
 def viewAllGroups():
@@ -358,7 +358,7 @@ def viewAllGroups():
     for res in result:
         group_data = [res[0], res[1], str(res[2]), str(res[3])]
         table_data.append(group_data)
-    print("CURRENT GROUPS")
+    print("\nCURRENT GROUPS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupsWithOutstandingBalance():
@@ -369,7 +369,7 @@ def viewGroupsWithOutstandingBalance():
     for res in result:
         group_data = [res[0], res[1], str(res[2]), str(res[3])]
         table_data.append(group_data)
-    print("GROUPS WITH OUTSTANDING BALANCE")
+    print("\nGROUPS WITH OUTSTANDING BALANCE")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
     
 
@@ -412,6 +412,10 @@ def viewExpense():
         create_cursor.execute(sql_statement, (selected_expenseId,))
         expense_info =  create_cursor.fetchone()
         table_data.append([expense_info[i] for i in range(0,8)])
+    else:
+        print(f"EXPENSE ID {selected_expenseId} was not found!!!")
+        return
+    print(f"\n{selected_expenseId} EXPENSE")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewAllExpenses():
@@ -420,6 +424,7 @@ def viewAllExpenses():
     result = create_cursor.fetchall()
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    print(f"\nALL EXPENSES")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewUserExpenses():
@@ -434,10 +439,30 @@ def viewUserExpenses():
         create_cursor.execute(sql_statement, (selected_userId, selected_userId))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,8)]) for expense in result]
+    else:
+        print(f"USER ID {selected_userId} was not found!!!")
+        return
+    print(f"\n{selected_userId}'s EXPENSES")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupExpenses():
-    print(1)
+    sql_statement = "SELECT groupID FROM GROUPING"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_groudIds = [id[0] for id in result]
+    selected_groupId = input("Enter group ID: ")
+    table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
+    if (selected_groupId in list_of_groudIds):
+        sql_statement = "SELECT * FROM EXPENSE where groupID = %s"
+        create_cursor.execute(sql_statement, (selected_groupId,))
+        result = create_cursor.fetchall()
+        [table_data.append([expense[i] for i in range(0,4)]) for expense in result]
+    else:
+        print(f"GROUP ID {selected_groupId} was not found!")
+        return
+    print(f"\n{selected_groupId}'s EXPENSES")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
 
 def groupMenu():
     choice = -1
