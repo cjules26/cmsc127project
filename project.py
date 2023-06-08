@@ -84,6 +84,52 @@ def addUser():
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
 
+def addGroup():
+    create_cursor.execute("SELECT COUNT(groupID) FROM GROUPING")
+    row = create_cursor.fetchone()
+    groupIDcount = row[0] if row else 0
+    if groupIDcount == 0:
+        groupID = "G1"
+    else:
+        groupID = "G" + str(groupIDcount + 1)
+
+    groupName = input("Enter Group Name: ")
+    moneyOwed = float(input("Enter Money Owed: "))
+    moneyLent = float(input("Enter Money Lent: "))
+    sql_statement = 'INSERT INTO GROUPING(groupID,groupName,moneyOwed,moneyLent) VALUES(%s,%s,%s,%s)'
+    insert = (groupID,groupName,moneyOwed,moneyLent)
+    create_cursor.execute(sql_statement, insert)
+    mariadb_connection.commit()
+
+# def deleteGroup(id):
+#     sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
+#     insert = id
+#     create_cursor.execute(sql_statement, insert)
+#     mariadb_connection.commit()
+
+# def groupMenu():
+#     choice = -1
+#     while (choice != 0):
+#         print("\n**********GROUP MENU*********")
+#         print("[1] Add Group")
+#         print("[2] Update Group")
+#         print("[3] Delete Group")
+#         print("[4] Update Group")
+#         print("[0] Return\n")
+#         choice = int(input("Please enter choice: "))
+#         if choice == 1:
+#             print(1)
+#             addGroup()
+#         elif choice == 2:
+#             print("2")
+#         elif choice == 3:
+#             groupID = input("Please enter groupID: ")
+#             deleteGroup(groupID)
+#         elif choice == 4:
+#             print()
+#         else:
+#             print("Invalid Choice!!!")
+
 def userMenu():
     choice = -1
     while (choice != 0):
@@ -120,7 +166,7 @@ def menu():
         if choice == 1:
             userMenu()
         elif choice == 2:
-            print("2")
+            groupMenu()
         elif choice == 3:
             print("3")
         elif choice == 0:
