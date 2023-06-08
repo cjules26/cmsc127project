@@ -2,7 +2,7 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 # import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -190,7 +190,62 @@ def updatePerson(id):
         updatePersonMoneyLent(id)
     else:
         print("INVALID CHOICE!!")
-        updateGroup(id)
+        updatePerson(id)
+
+def viewAllPerson():
+    sql_statement = "SELECT * FROM person"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["userID", "First Name","Last Name", "Money Owed", "Money Lent", "borrowerID"]]
+    for res in result:
+        person_data = [res[0], res[1], res[2], str(res[3]), str(res[4]), res[5]]
+        table_data.append(person_data)
+    print("CURRENT PERSONS")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+def searchPerson(id):
+    sql_statement = "SELECT * FROM person WHERE userID=%s"
+    sql_data = (id,)
+    create_cursor.execute(sql_statement, sql_data)
+    person =  create_cursor.fetchone()
+    print("\nVIEWING PERSON...\n")
+    print(" userID:", person[0])
+    print(" First Name:", person[1])
+    print(" Last Name: ", person[2])
+    print(" Money Owed:", format_decimal(person[3]))
+    print(" Money Lent by Group:", format_decimal(person[4]))
+    print(" borrowerID: ", person[5])
+    
+def userMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********USER MENU*********")
+        print("[1] Add User")
+        print("[2] Update User")
+        print("[3] Delete User")
+        print("[4] Search User")
+        print("[5] View All Users")
+        print("[0] Return\n")
+        choice = int(input("Please enter choice: "))
+        if choice == 1:
+            addUser()
+        elif choice == 2:
+            userID = input("Enter userID: ")
+            updatePerson(userID)
+        elif choice == 3:
+            userID = input("Enter userID: ")
+            deletePerson(userID)
+        elif choice == 4:
+            userID = input("Enter userID: ")
+            searchPerson(userID)
+        elif choice ==5:
+            viewAllPerson()
+        elif choice == 0:
+            break
+        else:
+            print("Invalid Choice!!!")
+            userMenu()
+
 
 ## GROUP FUNCTIONS
 
@@ -364,23 +419,21 @@ def groupMenu():
         else:
             print("Invalid Choice!!!")
 
-def userMenu():
+def reports():
     choice = -1
     while (choice != 0):
-        print("\n**********USER MENU*********")
-        print("[1] Add User")
-        print("[2] Update User")
-        print("[3] Delete User")
+        print("\n**********REPORTS MENU*********")
+        print("[1] View Expenses Made Within a Month")
+        print("[2] View Expenses Made With a Friend")
+        print("[3] View All Expenses Made With a Group")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
-            addUser()
+            print()
         elif choice == 2:
-            userID = input("Enter userID: ")
-            updatePerson(userID)
+            print()
         elif choice == 3:
-            userID = input("Enter userID: ")
-            deletePerson(userID)
+            print()
         elif choice == 0:
             break
         else:
@@ -393,6 +446,7 @@ def menu():
         print("[1] User")
         print("[2] Group")
         print("[3] Expense")
+        print("[4] Generate Reports")
         print("[0] Exit\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
@@ -401,6 +455,8 @@ def menu():
             groupMenu()
         elif choice == 3:
             print("3")
+        elif choice ==4:
+            reports()
         elif choice == 0:
             print("Thank you!")
         else:
