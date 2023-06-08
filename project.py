@@ -2,7 +2,7 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='neverevernever', host='localhost', port='3306')
+mariadb_connection = mariadb.connect(user ='root', password ='', host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -121,6 +121,7 @@ def updateGroupName(id):
     insert = (new_group_name, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
+    print(f"\nSUCCESSFULLY UPDATED {id}'s GROUP NAME!\n")
 
 def updateGroupMoneyOwed(id):
     sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
@@ -132,6 +133,7 @@ def updateGroupMoneyOwed(id):
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
+    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
 
 def updateGroupMoneyLent(id):
     sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
@@ -143,6 +145,7 @@ def updateGroupMoneyLent(id):
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
+    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
 def updateGroup(id) :
     print("\n****SELECT UPDATE****")
@@ -171,6 +174,14 @@ def showUpdateGroupMenu():
     else:
         print("Group ID not found!!!")
         showUpdateGroupMenu()
+
+
+def deleteGroup(id):
+    print(id)
+    # sql_statement = "DELETE FROM GROUPING WHERE groupID='%s'"
+    # insert = [id]
+    # create_cursor.execute(sql_statement, insert)
+    # mariadb_connection.commit()
 
 def viewAllGroups():
     sql_statement = "SELECT * FROM GROUPING"
@@ -220,14 +231,11 @@ def groupMenu():
     while (choice != 0):
         print("\n**********GROUP MENU*********")
         print("[1] Add Group")
-        print("[2] Update Group")
-        print("[3] Delete Group")
-        print("[4] View All Groups")
-
         print("[2] Delete Group")
         print("[3] Search Group")
         print("[4] Update Group")
         print("[5] View Group")
+        print("[6] View All Groups")
         print("[0] Return\n")
         choice = int(input("Please enter choice: "))
         if choice == 1:
@@ -238,10 +246,12 @@ def groupMenu():
         elif choice == 3:
             print()
         elif choice == 4:
-            groupID = input("Please enter groupID: ")
+            showUpdateGroupMenu()
         elif choice == 5:
             groupID = input("Please enter groupID: ")
             viewGroup(groupID)
+        elif choice == 6:
+            viewAllGroups()
         elif choice == 0:
             print()
         else:
