@@ -222,6 +222,12 @@ def updateGroupMoneyLent(id):
     mariadb_connection.commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
+def deletePerson(id):
+    sql_statement = "DELETE from person where userID = %s"
+    create_cursor.execute(sql_statement,(id,))
+    mariadb_connection.commit()
+    print("Successfully deleted!")
+
 def updateGroup(id) :
     print("\n****SELECT UPDATE****")
     print("[1] Update Group Name")
@@ -347,9 +353,10 @@ def userMenu():
             userID = input("Enter userID: ")
             updatePerson(userID)
         elif choice == 3:
-            print("3")
+            userID = input("Enter userID: ")
+            deletePerson(userID)
         elif choice == 0:
-            print()
+            break
         else:
             print("Invalid Choice!!!")
 
