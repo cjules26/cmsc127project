@@ -51,3 +51,22 @@ def isValidDate(date):
         return True
     except:
         return False
+    
+def isDateBeyond(date1, date2, cursor):
+    sql_statement = "SELECT datediff(%s, %s)"
+    cursor.execute(sql_statement, (date1, date2))
+    result = cursor.fetchone()[0]
+    print(result)
+    if int(result) >= 0:
+        return True
+    else:
+        return False
+    
+def isDateBehind(date1, date2, cursor):
+    sql_statement = "SELECT datediff(%s, %s)"
+    cursor.execute(date1, date2)
+    result = cursor.fetchone()[0]
+    if int(result) <= 0:
+        return True
+    else:
+        return False

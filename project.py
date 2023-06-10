@@ -645,7 +645,10 @@ def insertExpense():
             while (True):
                 datePaid = input("\nEnter date paid: ")
                 if (gq.isValidDate(datePaid)):
-                    break
+                    if (gq.isDateBeyond(datePaid, dateOwed, create_cursor)):
+                        return
+                    else:
+                        print("Cannot set Date Paid before Date Owed!")
                 else:
                     print("\nInvalid date!")
             break
