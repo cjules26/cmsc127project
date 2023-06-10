@@ -2,7 +2,10 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 import re
 
-mariadb_connection = mariadb.connect(user ='root', password ='mariadb26', host='localhost', port='3306')
+print("User: root")
+pword = input("Enter password: ")
+
+mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
@@ -11,12 +14,6 @@ create_cursor.execute("DROP DATABASE IF EXISTS `app`")
 create_cursor.execute("CREATE DATABASE IF NOT EXISTS `app`")
 
 create_cursor.execute("SHOW DATABASES")
-
-databases = create_cursor.fetchall()
-
-print("DATABASES:")
-for database in databases:
-    print(" ", database[0])
 
 create_cursor.execute("USE app")
 
@@ -556,19 +553,19 @@ def viewUserExpenses():
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupExpenses():
-    sql_statement = "SELECT groupID FROM GROUPING"
+    sql_statement = "SELECT groupID FROM grouping"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
-    list_of_groudIds = [id[0] for id in result]
-    selected_groupId = input("Enter group ID: ")
-    table_data = [["Group ID", "Group Name", "Money Owed", "Money Lent"]]
-    if (selected_groupId in list_of_groudIds):
-        sql_statement = "SELECT * FROM EXPENSE where groupID = %s"
-        create_cursor.execute(sql_statement, (selected_groupId,))
+    list_of_ids = [id[0] for id in result]
+    selected_groupId = input("Enter Group ID: ")
+    table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
+    if (selected_groupId in list_of_ids):
+        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        create_cursor.execute(sql_statement, (selected_groupId, selected_groupId))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     else:
-        print(f"GROUP ID {selected_groupId} was not found!")
+        print(f"GROUP ID {selected_groupId} was not found!!!")
         return
     print(f"\n{selected_groupId}'s EXPENSES")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
@@ -608,7 +605,9 @@ def groupMenu():
             continue
 
 def viewExpenseMadeWithinAMonth():
-    month = int(input("Enter Month in digits:"))
+    months = { "1": "January", "2": "February", "3":"March", "4":"April", "5":"May", "6":"June", "7":"July", "8":"August", "9":"September", "10":"October", "11":"November", "12":"December" }
+    month = input("Enter Month in digits:")
+    print(f"Month selected: {months[month]}")
     sql_statement = "SELECT* from expense where month(dateOwed) = %s"
     create_cursor.execute(sql_statement,(month,))
     result = create_cursor.fetchall()
