@@ -616,7 +616,7 @@ def insertExpense():
     #If recipient and sender are groups
     if (gq.isGroupIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
         groupID = sender
-    #If recipient is Group and sender is Group
+    #If recipient is Group and sender is User
     elif (gq.isGroupIDValid(recipient, create_cursor) and gq.isUserIDValid(sender, create_cursor)):
         groupID = recipient
         userID = sender
@@ -671,15 +671,12 @@ def insertExpense():
     mariadb_connection.commit()
     
 def deleteExpense():
-    sql_statement = "SELECT expenseID FROM EXPENSE"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
     selected_expenseId = input("Enter Expense ID: ")
-    if (selected_expenseId in list_of_ids):
+    if (gq.isExpenseIDValid(selected_expenseId, create_cursor)):
         sql_statement = "DELETE from expense where expenseID = %s"
         create_cursor.execute(sql_statement, (selected_expenseId,))
         mariadb_connection.commit()
+        print(f"EXPENSE ID {selected_expenseId} has been successfully deleted!")
     else:
         print(f"EXPENSE ID {selected_expenseId} was not found!")
 
@@ -687,55 +684,158 @@ def updateExpenseAmount(id):
     statement = "SELECT amount from EXPENSE where expenseID = %s"
     create_cursor.execute(statement, (id,))
     result = create_cursor.fetchone()
-    print(f"CURRENT EXPENSE AMOUNT: {result}")
-    input = int(input("Update new expense amount: "))
-    statement = "UPDATE EXPENSE SET amount = %s"
-    create_cursor.execute(statement, (input,))
+    print(f"CURRENT EXPENSE AMOUNT: {result[0]}")
+    new_amount = int(input("Update new expense amount: "))
+    statement = "UPDATE EXPENSE SET amount = %s where expenseID = %s"
+    create_cursor.execute(statement, (new_amount, id))
     mariadb_connection.commit()
 
 def updateExpenseSender(id):
-    statement = "SELECT sender, groupID from EXPENSE where expenseID = %s"
+    statement = "SELECT sender, recipient from EXPENSE where expenseID = %s"
     create_cursor.execute(statement, (id,))
     result = create_cursor.fetchone()
-    print(f"CURRENT EXPENSE SENDER: {result}")
-    input = int(input("Update new expense amount: "))
-    statement = "UPDATE EXPENSE SET amount = %s"
-    create_cursor.execute(statement, (input,))
-    mariadb_connection.commit()
+    sender = result[0]
+    recipient = result[1]
+    print(f"CURRENT EXPENSE SENDERID: {result[0]}")
     
+    while (True):
+        new_sender = input("Update new senderID: ")
+        if (not gq.isGroupIDValid(new_sender, create_cursor) and not gq.isUserIDValid(new_sender, create_cursor)):
+            print("\nInvalid senderID!")
+        elif (new_sender == recipient): 
+            print("\nCannot set senderID equal to recipientID!")
+        elif (gq.isUserIDValid(new_sender, create_cursor)):
+            if (gq.isUserIDValid(sender, create_cursor)):
+                statement = "UPDATE EXPENSE SET sender = %s, userID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, new_sender, id))
+                mariadb_connection.commit()
+            elif (gq.isGroupIDValid(sender, create_cursor) and gq.isUserIDValid(recipient, create_cursor)):
+                statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, new_sender, None, id))
+                mariadb_connection.commit()
+            else:
+                statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, new_sender, recipient, id))
+                mariadb_connection.commit()
+            print("\nSUCCESSFULLY UPDATED SENDER!")
+            break
+        else:
+            if (gq.isGroupIDValid(sender, create_cursor)):
+                statement = "UPDATE EXPENSE SET sender = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, new_sender, id))
+                mariadb_connection.commit()
+            elif (gq.isUserIDValid(sender, create_cursor) and gq.isGroupIDValid(recipient, create_cursor)):
+                statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, None, new_sender, id))
+                mariadb_connection.commit()
+            else:
+                statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_sender, recipient, new_sender, id))
+                mariadb_connection.commit()
+            print("\nSUCCESSFULLY UPDATED SENDER!")
+            break
+
+def updateExpenseRecipient(id):
+    statement = "SELECT sender, recipient from EXPENSE where expenseID = %s"
+    create_cursor.execute(statement, (id,))
+    result = create_cursor.fetchone()
+    sender = result[0]
+    recipient = result[1]
+    print(f"CURRENT EXPENSE RECPIENTID: {result[1]}")
+    while (True):
+        new_recipient = input("Update new recipientID: ")
+        if (not gq.isGroupIDValid(new_recipient, create_cursor) and not gq.isUserIDValid(new_recipient, create_cursor)):
+            print("\nInvalid recipientID!")
+        elif (new_recipient == sender): 
+            print("\nCannot set recepientID equal to senderID!")
+        elif (gq.isUserIDValid(new_recipient, create_cursor)):
+            if (gq.isGroupIDValid(sender, create_cursor)):
+                statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, new_recipient, id))
+                mariadb_connection.commit()
+            elif (gq.isUserIDValid(sender, create_cursor) and gq.isGroupIDValid(recipient, create_cursor)):
+                statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, None, id))
+                mariadb_connection.commit()
+            else:
+                statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, id))
+                mariadb_connection.commit()
+            print("\nSUCCESSFULLY UPDATED RECIPIENT!")
+            break
+        else:
+            if (gq.isUserIDValid(sender, create_cursor)):
+                statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, new_recipient, id))
+                mariadb_connection.commit()
+            elif (gq.isGroupIDValid(sender, create_cursor) and gq.isUserIDValid(recipient, create_cursor)):
+                statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, None, id))
+                mariadb_connection.commit()
+            else:
+                statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
+                create_cursor.execute(statement, (new_recipient, id))
+                mariadb_connection.commit()
+            print("\nSUCCESSFULLY UPDATED RECIPIENT!")
+            break
+
+def updateDateOwed(id):
+    new_date_owed = None
+    while (True):
+        new_date_owed = input("\nEnter new date owed: ")
+        if (gq.isValidDate(new_date_owed)):
+            break
+        else:
+            print("Invalid date!")
+    sql_statement = "UPDATE EXPENSE SET dateOwed = %s where expenseID = %s"
+    create_cursor.execute(sql_statement, (new_date_owed, id))
+    mariadb_connection.commit()
+
+def updateDatePaid(id):
+    new_date_paid = None
+    while (True):
+        new_date_owed = input("\nEnter new date paid: ")
+        if (gq.isValidDate(new_date_paid)):
+            break
+        else:
+            print("Invalid date!")
+    sql_statement = "UPDATE EXPENSE SET datePaid = %s where expenseID = %s"
+    create_cursor.execute(sql_statement, (new_date_paid, id))
+    mariadb_connection.commit()
 
 def updateExpense():
-    print("\n****SELECT UPDATE****")
-    print("[1] Update Amount")
-    print("[2] Update Sender")
-    print("[3] Update Recipient")
-    print("[4] Update Date Owed")
-    print("[5] Update Date Paid")
+    while True:
+        print("\n****SELECT UPDATE****")
+        print("[1] Update Amount")
+        print("[2] Update Sender")
+        print("[3] Update Recipient")
+        print("[4] Update Date Owed")
+        print("[5] Update Date Paid")
+        print("[0] Return")
 
-    choice = input("\nPlease enter your choice: ")
+        choice = input("\nPlease enter your choice: ")
 
-    if (choice not in ["1", "2", "3", "4", "5"]):
-        print("\nInvalid choice!")
-        return
-
-    sql_statement = "SELECT expenseID FROM EXPENSE"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
-    selected_expenseId = input("Enter Expense ID: ")
-    if (selected_expenseId in list_of_ids):
-        if (choice == "1") :
-            updateExpenseAmount(selected_expenseId)
-        elif (choice == "2"):
-            updateExpenseSender(selected_expenseId)
-        elif (choice == "3"):
-            updateExpenseRecipient(selected_expenseId)
-        elif (choice == "4"):
-            updateDateOwed(selected_expenseId)
-        elif (choice == "5"):
-            updateDatePaid(selected_expenseId)
-    else:
-        print(f"EXPENSE ID {selected_expenseId} was not found!")
+        if (choice not in ["1", "2", "3", "4", "5", "0"]):
+            print("Invalid choice!")
+        elif (choice == "0"):
+            break
+        else:
+            while True:
+                selected_expenseId = input("\nEnter Expense ID: ")
+                if (gq.isExpenseIDValid(selected_expenseId, create_cursor)):
+                    if (choice == "1"):
+                        updateExpenseAmount(selected_expenseId)
+                    elif (choice == "2"):
+                        updateExpenseSender(selected_expenseId)
+                    elif (choice == "3"):
+                        updateExpenseRecipient(selected_expenseId)
+                    elif (choice == "4"):
+                        updateDateOwed(selected_expenseId)
+                    elif (choice == "5"):
+                        updateDatePaid(selected_expenseId)
+                    break
+                else:
+                    print(f"EXPENSE ID {selected_expenseId} was not found!")
 
 def viewCurrentBalanceFromAllExpenses():
     sql_statement = "SELECT moneyOwed FROM PERSON where userID='U1'"
