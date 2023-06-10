@@ -542,7 +542,7 @@ def viewUserExpenses():
     selected_userId = input("Enter User ID: ")
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     if (selected_userId in list_of_ids):
-        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        sql_statement = "SELECT * FROM EXPENSE where sender = %s"
         create_cursor.execute(sql_statement, (selected_userId, selected_userId))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
@@ -560,7 +560,7 @@ def viewGroupExpenses():
     selected_groupId = input("Enter Group ID: ")
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     if (selected_groupId in list_of_ids):
-        sql_statement = "SELECT * FROM EXPENSE where recipient = %s or sender = %s"
+        sql_statement = "SELECT * FROM EXPENSE where sender = %s"
         create_cursor.execute(sql_statement, (selected_groupId, selected_groupId))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
@@ -603,6 +603,16 @@ def groupMenu():
         else:
             print("Invalid Choice!!!")
             continue
+
+def viewCurrentBalanceFromAllExpenses():
+    sql_statement = "SELECT moneyOwed FROM PERSON where userID='U1'"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    table_data = [["Current Balance"]]
+
+    [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
+    print(f"\nMain User's Current Balance")
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewExpenseMadeWithinAMonth():
     months = { "1": "January", "2": "February", "3":"March", "4":"April", "5":"May", "6":"June", "7":"July", "8":"August", "9":"September", "10":"October", "11":"November", "12":"December" }
@@ -648,7 +658,7 @@ def reports():
         elif choice == "3":
             viewGroupExpenses()
         elif choice == "4":
-            print()
+            viewCurrentBalanceFromAllExpenses()
         elif choice == "5":
             viewUsersWithOutstandingBalance()
         elif choice == "6":
