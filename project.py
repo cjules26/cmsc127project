@@ -4,7 +4,7 @@ import re
 import general_queries as gq
 
 print("User: root")
-pword = 'neverevernever'
+pword = input("Enter password: ")
 
 mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
 
@@ -601,7 +601,7 @@ def insertExpense():
             print("\nInvalid Choice!")
     
     #Check sender's validity
-    sender = "null"
+    sender = None
     while (True):
         sender = input("\nEnter expense sender ID: ")
         if (((sender != "U1" and gq.isUserIDValid(sender, create_cursor)) or gq.isGroupIDValid(sender, create_cursor)) == False):
@@ -610,8 +610,8 @@ def insertExpense():
             break
 
     #userID and groupID's default values are null
-    userID = "null"
-    groupID = "null"
+    userID = None
+    groupID = None
 
     #If recipient and sender are groups
     if (gq.isGroupIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
@@ -629,7 +629,7 @@ def insertExpense():
         userID = sender
 
     #Validate Date Owed
-    dateOwed = "null"
+    dateOwed = None
     while(True):
         dateOwed = input("\nEnter date owed: ")
         if (gq.isValidDate(dateOwed)):
@@ -638,7 +638,7 @@ def insertExpense():
             print("\nInvalid Date")
     
     #Configure Date Paid
-    datePaid = "null"
+    datePaid = None
     while(True):
         paid = input("Transaction was paid? (y/n): ") 
         if (paid == "y"):
@@ -655,18 +655,8 @@ def insertExpense():
             print("\nInvalid Choice")
     
     
-    if (datePaid == "null" and groupID == "null"):
-        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, userID,))
-    elif (datePaid == "null"):
-        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID, groupID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s, %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, userID, groupID,))
-    elif (groupID == "null"):
-        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, datePaid, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID,))
-    else:
-        sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID, groupID)   )
+    sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
+    create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID, groupID)   )
     print("AN EXPENSE WAS INSERTED SUCCESSFULLY")
     mariadb_connection.commit()
     
