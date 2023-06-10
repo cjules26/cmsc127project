@@ -3,7 +3,7 @@ from tabulate import tabulate
 import re
 
 print("User: root")
-pword = input("Enter password: ")
+pword = 'neverevernever'
 
 mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
 
@@ -76,6 +76,8 @@ statements = [
     'INSERT INTO EXPENSE VALUES ("E6", 150, "U1","G1", "2019-07-12", null, "U1","G1");',
     'INSERT INTO EXPENSE VALUES ("E7", 150, "U1","G1", "2019-07-12", null, "U1","G1");',
     'INSERT INTO EXPENSE VALUES ("E8", 150, "U1","G2", "2019-07-12", null, "U1","G2");',
+    'INSERT INTO EXPENSE VALUES ("E9", 750, "U1","G1", "2019-07-12", null, "U1","G1");',
+    'INSERT INTO EXPENSE VALUES ("E10", 500, "U1","G2", "2019-07-12", null, "U1","G2");',
 ]
 
 for statement in statements:
@@ -527,9 +529,10 @@ def viewExpense():
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewAllExpenses():
-    sql_statement = "SELECT * FROM EXPENSE"
+    sql_statement = "SELECT * FROM EXPENSE order by length(expenseID), (substring(expenseID, length(expenseID)))"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
+    print(result)
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
@@ -570,39 +573,41 @@ def viewGroupExpenses():
     print(f"\n{selected_groupId}'s EXPENSES")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
+def insertExpense():
+    sql_statement = "SELECT * from EXPENSE order by length(expenseID), (substring(expenseID, length(expenseID)))"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    result = result[-1][0][1:]
+    next_id =  f"E{int(result) + 1}"
+    amount = int(input("Enter expense amount: "))
+    sender = input("Enter expense sender ID: ")
+    receiver = input("Enter expense receiver ID: ")
+    dateOwed = input("Enter date owed: ")
+    datePaid = "null"
+    paid = input("Transaction was paid? (y/n): ") 
+    if (paid == "y"):
+        datePaid = input("Enter date paid: ")
+    userId = "U1"
+    groupID = "null"
+    if (sender[0] == "G"):
+        groupID = sender
+    elif (receiver[0] == "G"):
+        groupID = receiver
+    
+    if (datePaid == "null" and groupID == "null"):
+        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s)"
+        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, userId,))
+    elif (datePaid == "null"):
+        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID, groupID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s, %s)"
+        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, userId, groupID,))
+    elif (groupID == "null"):
+        sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, datePaid, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s)"
+        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, datePaid, userId,))
+    else:
+        sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
+        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, datePaid, userId, groupID)   )
+    print("AN EXPENSE WAS INSERTED SUCCESSFULLY")
 
-def groupMenu():
-    choice = -1
-    while (choice != 0):
-        print("\n**********GROUP MENU*********")
-        print("[1] Add Group")
-        print("[2] Delete Group")
-        print("[3] Search Group")
-        print("[4] Update Group")
-        print("[5] View All Groups")
-        print("[6] View Groups with Outstanding Balance")
-        print("[0] Return\n")
-
-        choice = input("Please enter choice: ") 
-
-        if choice == "1":
-            addGroup()
-        elif choice == "2":
-            deleteGroup()
-        elif choice == "3":
-            searchGroup()
-        elif choice == "4":
-            showUpdateGroupMenu()
-        elif choice == "5":
-            viewAllGroups()
-        elif choice == "6":
-            viewGroupsWithOutstandingBalance()
-        elif choice == "0":
-            print()
-            break
-        else:
-            print("Invalid Choice!!!")
-            continue
 
 def viewCurrentBalanceFromAllExpenses():
     sql_statement = "SELECT moneyOwed FROM PERSON where userID='U1'"
@@ -672,14 +677,51 @@ def reports():
             print("Invalid Choice!!!")
             continue
 
+def groupMenu():
+    choice = -1
+    while (choice != 0):
+        print("\n**********GROUP MENU*********")
+        print("[1] Add Group")
+        print("[2] Delete Group")
+        print("[3] Search Group")
+        print("[4] Update Group")
+        print("[5] View All Groups")
+        print("[6] View Groups with Outstanding Balance")
+        print("[0] Return\n")
+
+        choice = input("Please enter choice: ") 
+
+        if choice == "1":
+            addGroup()
+        elif choice == "2":
+            deleteGroup()
+        elif choice == "3":
+            searchGroup()
+        elif choice == "4":
+            showUpdateGroupMenu()
+        elif choice == "5":
+            viewAllGroups()
+        elif choice == "6":
+            viewGroupsWithOutstandingBalance()
+        elif choice == "0":
+            print()
+            break
+        else:
+            print("Invalid Choice!!!")
+            continue
+
+
 def expenseMenu():
     choice = -1
     while (choice != 0):
         print("\n**********EXPENSE MENU*********")
         print("[1] View Expense")
         print("[2] View All Expenses")
-        print("[3] View User Expense")
-        print("[4] View Group Expense")
+        print("[3] View User Expenses")
+        print("[4] View Group Expenses")
+        print("[5] Insert an expense")
+        print("[6] Delete an expense")
+        print("[7] Update an expense")
         print("[0] Return\n")
         
         choice = input("Please enter choice: ")
@@ -692,6 +734,12 @@ def expenseMenu():
             viewUserExpenses()
         elif choice == "4":
             viewGroupExpenses()
+        elif choice == "5":
+            insertExpense()
+        elif choice == "6":
+            deleteExpense()
+        elif choice == "7":
+            updateExpense()
         elif choice == "0":
             print()
             break
