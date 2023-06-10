@@ -1,9 +1,10 @@
 import mysql.connector as mariadb 
 from tabulate import tabulate
 import re
+import general_queries as gq
 
 print("User: root")
-pword = input("Enter password: ")
+pword = 'neverevernever'
 
 mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
 
@@ -307,11 +308,14 @@ def userMenu():
 def addGroup():
     create_cursor.execute("SELECT COUNT(groupID) FROM GROUPING")
     row = create_cursor.fetchone()
-    groupIDcount = row[0] if row else 0
-    if groupIDcount == 0:
-        groupID = "G1"
-    else:
-        groupID = "G" + str(groupIDcount + 1)
+    groupIDcount = row[0] if row > 0 else 0
+    groupID = "G1"
+    if groupIDcount > 0:
+        sql_statement = "SELECT * from EXPENSE order by length(expenseID), (substring(expenseID, length(expenseID)))"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        result = result[-1][0][1:]
+        groupID =  f"G{int(result) + 1}"
 
     groupName = input("Enter Group Name: ")
     moneyOwed = float(input("Enter Money Owed: "))
@@ -564,33 +568,105 @@ def insertExpense():
     result = create_cursor.fetchall()
     result = result[-1][0][1:]
     next_id =  f"E{int(result) + 1}"
-    amount = int(input("Enter expense amount: "))
-    sender = input("Enter expense sender ID: ")
-    receiver = input("Enter expense receiver ID: ")
-    dateOwed = input("Enter date owed: ")
-    datePaid = "null"
-    paid = input("Transaction was paid? (y/n): ") 
-    if (paid == "y"):
-        datePaid = input("Enter date paid: ")
-    userId = "U1"
+
+    #Configure expense amount 
+    amount = 0
+    while(True):
+        try:
+            amount = int(input("Enter expense amount: "))
+            break
+        except:
+            print("\nAmount is invalid!")
+    
+    #Set Receiver to U1 as default recipient
+    recipient = "U1"
+
+    #Configure Receiver
+    while (recipient == "U1"):
+        isGroup = input("\nIs receiver a group? (y/n): ")
+        if (isGroup == "n"):
+            print("\nRecipient set to U1")
+            break
+        elif (isGroup == "y"):
+            isValid = False
+            while (isValid == False):
+                recipient = input("\nEnter groupID recipient: ")
+                isValid = gq.isGroupIDValid(recipient, create_cursor)
+                if (isValid):
+                    break
+                else:
+                    print("\nGroup ID was not found!")
+            break
+        else:
+            print("\nInvalid Choice!")
+    
+    #Check sender's validity
+    sender = "null"
+    while (True):
+        sender = input("\nEnter expense sender ID: ")
+        if (((sender != "U1" and gq.isUserIDValid(sender, create_cursor)) or gq.isGroupIDValid(sender, create_cursor)) == False):
+            print("Sender ID is not a valid ID")
+        else:
+            break
+
+    #userID and groupID's default values are null
+    userID = "null"
     groupID = "null"
-    if (sender[0] == "G"):
+
+    #If recipient and sender are groups
+    if (gq.isGroupIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
         groupID = sender
-    elif (receiver[0] == "G"):
-        groupID = receiver
+    #If recipient is Group and sender is Group
+    elif (gq.isGroupIDValid(recipient, create_cursor) and gq.isUserIDValid(sender, create_cursor)):
+        groupID = recipient
+        userID = sender
+    #If recipient is User and sender is Group
+    elif (gq.isUserIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
+        groupID = sender
+        userID = recipient
+    #If recipient and sender are users
+    elif (gq.isUserIDValid(recipient, create_cursor) and gq.isUserIDValid(sender, create_cursor)):
+        userID = sender
+
+    #Validate Date Owed
+    dateOwed = "null"
+    while(True):
+        dateOwed = input("\nEnter date owed: ")
+        if (gq.isValidDate(dateOwed)):
+            break
+        else:
+            print("\nInvalid Date")
+    
+    #Configure Date Paid
+    datePaid = "null"
+    while(True):
+        paid = input("Transaction was paid? (y/n): ") 
+        if (paid == "y"):
+            while (True):
+                datePaid = input("\nEnter date paid: ")
+                if (gq.isValidDate(datePaid)):
+                    break
+                else:
+                    print("\nInvalid date!")
+            break
+        elif (paid == "n"):
+            break
+        else:
+            print("\nInvalid Choice")
+    
     
     if (datePaid == "null" and groupID == "null"):
         sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, userId,))
+        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, userID,))
     elif (datePaid == "null"):
         sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, userID, groupID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), %s, %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, userId, groupID,))
+        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, userID, groupID,))
     elif (groupID == "null"):
         sql_statement = "INSERT INTO EXPENSE(expenseID, amount, sender, recipient, dateOwed, datePaid, userID) VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, datePaid, userId,))
+        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID,))
     else:
         sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
-        create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, datePaid, userId, groupID)   )
+        create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID, groupID)   )
     print("AN EXPENSE WAS INSERTED SUCCESSFULLY")
     mariadb_connection.commit()
     
@@ -607,6 +683,59 @@ def deleteExpense():
     else:
         print(f"EXPENSE ID {selected_expenseId} was not found!")
 
+def updateExpenseAmount(id):
+    statement = "SELECT amount from EXPENSE where expenseID = %s"
+    create_cursor.execute(statement, (id,))
+    result = create_cursor.fetchone()
+    print(f"CURRENT EXPENSE AMOUNT: {result}")
+    input = int(input("Update new expense amount: "))
+    statement = "UPDATE EXPENSE SET amount = %s"
+    create_cursor.execute(statement, (input,))
+    mariadb_connection.commit()
+
+def updateExpenseSender(id):
+    statement = "SELECT sender, groupID from EXPENSE where expenseID = %s"
+    create_cursor.execute(statement, (id,))
+    result = create_cursor.fetchone()
+    print(f"CURRENT EXPENSE SENDER: {result}")
+    input = int(input("Update new expense amount: "))
+    statement = "UPDATE EXPENSE SET amount = %s"
+    create_cursor.execute(statement, (input,))
+    mariadb_connection.commit()
+    
+
+def updateExpense():
+    print("\n****SELECT UPDATE****")
+    print("[1] Update Amount")
+    print("[2] Update Sender")
+    print("[3] Update Recipient")
+    print("[4] Update Date Owed")
+    print("[5] Update Date Paid")
+
+    choice = input("\nPlease enter your choice: ")
+
+    if (choice not in ["1", "2", "3", "4", "5"]):
+        print("\nInvalid choice!")
+        return
+
+    sql_statement = "SELECT expenseID FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_expenseId = input("Enter Expense ID: ")
+    if (selected_expenseId in list_of_ids):
+        if (choice == "1") :
+            updateExpenseAmount(selected_expenseId)
+        elif (choice == "2"):
+            updateExpenseSender(selected_expenseId)
+        elif (choice == "3"):
+            updateExpenseRecipient(selected_expenseId)
+        elif (choice == "4"):
+            updateDateOwed(selected_expenseId)
+        elif (choice == "5"):
+            updateDatePaid(selected_expenseId)
+    else:
+        print(f"EXPENSE ID {selected_expenseId} was not found!")
 
 def viewCurrentBalanceFromAllExpenses():
     sql_statement = "SELECT moneyOwed FROM PERSON where userID='U1'"
