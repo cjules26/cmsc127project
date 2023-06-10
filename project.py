@@ -543,7 +543,7 @@ def viewUserExpenses():
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     if (selected_userId in list_of_ids):
         sql_statement = "SELECT * FROM EXPENSE where sender = %s"
-        create_cursor.execute(sql_statement, (selected_userId, selected_userId))
+        create_cursor.execute(sql_statement, (selected_userId,))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     else:
@@ -561,7 +561,7 @@ def viewGroupExpenses():
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     if (selected_groupId in list_of_ids):
         sql_statement = "SELECT * FROM EXPENSE where sender = %s"
-        create_cursor.execute(sql_statement, (selected_groupId, selected_groupId))
+        create_cursor.execute(sql_statement, (selected_groupId,))
         result = create_cursor.fetchall()
         [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     else:
