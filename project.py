@@ -3,7 +3,7 @@ from tabulate import tabulate
 import re
 
 print("User: root")
-pword = 'neverevernever'
+pword = input("Enter password: ")
 
 mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
 
@@ -426,21 +426,6 @@ def showUpdateGroupMenu():
         break
 
 def deleteGroup():
-    while True:
-        sql_statement = "SELECT groupID FROM grouping"
-        create_cursor.execute(sql_statement)
-        result = create_cursor.fetchall()
-        userIds = [item[0] for item in result]
-
-        id = input("Enter groupID: ")
-        if not re.match(r'^G\d+$', id):
-            print("Invalid input")
-        elif id not in userIds:
-            print("Group ID not found!")
-            return
-        else:
-            break
-
     sql_statement = "SELECT groupID FROM GROUPING"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
@@ -451,7 +436,7 @@ def deleteGroup():
         create_cursor.execute(sql_statement, (selected_groupId,))
         mariadb_connection.commit()
     else:
-        print(f"GRPUD ID {selected_groupId} was not found!")
+        print(f"GROUD ID {selected_groupId} was not found!")
         
 
 def viewAllGroups():
@@ -607,6 +592,20 @@ def insertExpense():
         sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
         create_cursor.execute(sql_statement, (next_id, amount, sender, receiver, dateOwed, datePaid, userId, groupID)   )
     print("AN EXPENSE WAS INSERTED SUCCESSFULLY")
+    mariadb_connection.commit()
+    
+def deleteExpense():
+    sql_statement = "SELECT expenseID FROM EXPENSE"
+    create_cursor.execute(sql_statement)
+    result = create_cursor.fetchall()
+    list_of_ids = [id[0] for id in result]
+    selected_expenseId = input("Enter Expense ID: ")
+    if (selected_expenseId in list_of_ids):
+        sql_statement = "DELETE from expense where expenseID = %s"
+        create_cursor.execute(sql_statement, (selected_expenseId,))
+        mariadb_connection.commit()
+    else:
+        print(f"EXPENSE ID {selected_expenseId} was not found!")
 
 
 def viewCurrentBalanceFromAllExpenses():
