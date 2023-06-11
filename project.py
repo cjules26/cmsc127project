@@ -500,13 +500,9 @@ def searchGroup():
     print(" Group Members:", ', '.join(memberNames))
 
 def viewExpense():
-    sql_statement = "SELECT expenseID FROM EXPENSE"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_expenses = [expense[0] for expense in result]
     selected_expenseId = input("Enter Expense ID: ")
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
-    if (selected_expenseId in list_of_expenses):
+    if (gq.isExpenseIDValid(selected_expenseId, create_cursor)):
         sql_statement = "SELECT * from EXPENSE where expenseID = %s"
         create_cursor.execute(sql_statement, (selected_expenseId,))
         expense_info =  create_cursor.fetchone()
@@ -521,19 +517,14 @@ def viewAllExpenses():
     sql_statement = "SELECT * FROM EXPENSE order by length(expenseID), (substring(expenseID, length(expenseID)))"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
-    print(result)
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
     [table_data.append([expense[i] for i in range(0,len(table_data[0]))]) for expense in result]
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewUserExpenses():
-    sql_statement = "SELECT userID FROM PERSON"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
     selected_userId = input("Enter User ID: ")
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
-    if (selected_userId in list_of_ids):
+    if (gq.isUserIDValid(selected_userId, create_cursor)):
         sql_statement = "SELECT * FROM EXPENSE where sender = %s"
         create_cursor.execute(sql_statement, (selected_userId,))
         result = create_cursor.fetchall()
@@ -545,13 +536,9 @@ def viewUserExpenses():
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
 def viewGroupExpenses():
-    sql_statement = "SELECT groupID FROM grouping"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
     selected_groupId = input("Enter Group ID: ")
     table_data = [["Expense ID", "Amount", "Sender", "Recipient", "Date Owed", "Date Paid", "userID", "groupID"]]
-    if (selected_groupId in list_of_ids):
+    if (gq.isGroupIDValid(selected_groupId, create_cursor)):
         sql_statement = "SELECT * FROM EXPENSE where sender = %s"
         create_cursor.execute(sql_statement, (selected_groupId,))
         result = create_cursor.fetchall()
