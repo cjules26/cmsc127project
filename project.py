@@ -115,20 +115,20 @@ def addUser():
         userID = "U1"
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
-        moneyOwed = float(input("Enter Money Owed: "))
-        moneyLent = float(input("Enter Money Lent: "))
-        sql_statement = 'INSERT INTO PERSON(userId,fName,lName,moneyOwed,moneyLent) VALUES(%s,%s,%s,%s,%s)'
-        insert = (userID,fName,lName,moneyOwed,moneyLent)
+        # moneyOwed = float(input("Enter Money Owed: "))
+        # moneyLent = float(input("Enter Money Lent: "))
+        sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s)'
+        insert = (userID,fName,lName,0,0)
         create_cursor.execute(sql_statement, insert)
     else:
         userID = "U" + str(userIDcount + 1)
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
-        moneyOwed = float(input("Enter Money Owed: "))
-        moneyLent = float(input("Enter Money Lent: "))
-        borrowerId = input("Enter borrower ID: ")
+        # moneyOwed = float(input("Enter Money Owed: "))
+        # moneyLent = float(input("Enter Money Lent: "))
+        # borrowerId = input("Enter borrower ID: ")
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s,%s)'
-        insert = (userID,fName,lName,moneyOwed,moneyLent,borrowerId)
+        insert = (userID,fName,lName,0,0,"U1")
         create_cursor.execute(sql_statement, insert)
     print("\nSuccessfully added Person!\n")
     mariadb_connection.commit()
@@ -318,10 +318,10 @@ def addGroup():
         groupID =  f"G{int(result) + 1}"
 
     groupName = input("Enter Group Name: ")
-    moneyOwed = float(input("Enter Money Owed: "))
-    moneyLent = float(input("Enter Money Lent: "))
-    sql_statement = 'INSERT INTO GROUPING(groupID,groupName,moneyOwed,moneyLent) VALUES(%s,%s,%s,%s)'
-    insert = (groupID,groupName,moneyOwed,moneyLent)
+    # moneyOwed = float(input("Enter Money Owed: "))
+    # moneyLent = float(input("Enter Money Lent: "))
+    sql_statement = 'INSERT INTO GROUPING VALUES(%s,%s,%s,%s)'
+    insert = (groupID,groupName,0,0)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
 
