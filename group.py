@@ -117,9 +117,13 @@ def showUpdateGroupMenu(create_cursor, commit):
 def deleteGroup(create_cursor, commit):
     selected_groupId = input("Enter Group ID: ")
     if (gq.isGroupIDValid(selected_groupId, create_cursor)):
-        sql_statement = "DELETE from grouping where groupID = %s"
+        groupMoneyLent = "SELECT moneyLent from grouping where groupID = %s"
+        personMoneyOwed = "SELECT moneyOwed from person where userID = 'U1'"
+        update = "UPDATE person set moneyOwed = %s - %s"
+        del_statement = "DELETE from grouping where groupID = %s"
         try:
-            create_cursor.execute(sql_statement, (selected_groupId,))
+            # create_cursor.execute(update, (personMoneyOwed,),(groupMoneyLent, (selected_groupId,)))
+            create_cursor.execute(del_statement, (selected_groupId,))
             commit
             print(f"SUCCESSFULLY DELETED GROUP {selected_groupId}!")
         except:
