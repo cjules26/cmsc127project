@@ -299,21 +299,24 @@ def userMenu():
 
 
 ## GROUP FUNCTIONS
-
 def addGroup():
     create_cursor.execute("SELECT COUNT(groupID) FROM GROUPING")
     row = create_cursor.fetchone()
-    groupIDcount = row[0] if row else 0
-    if groupIDcount == 0:
-        groupID = "G1"
-    else:
-        groupID = "G" + str(groupIDcount + 1)
+    groupIDcount = row[0] if row[0] > 0 else 0
+    next_id = "G1"
+    if groupIDcount > 0:
+        sql_statement = "SELECT * from GROUPING order by length(groupID), (substring(groupID, length(groupID)))"
+        create_cursor.execute(sql_statement)
+        result = create_cursor.fetchall()
+        result = result[-1][0][1:]
+        next_id =  f"G{int(result) + 1}"
 
     groupName = input("Enter Group Name: ")
     sql_statement = 'INSERT INTO GROUPING VALUES(%s,%s,%s,%s)'
-    insert = (groupID,groupName,0,0)
+    insert = (next_id,groupName,0,0)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
+    print("\nSUCCESSFULLY ADDED NEW GROUP!")
 
 def updateGroupName(id):
     sql_statement = "SELECT groupName FROM GROUPING where groupID = %s"
@@ -325,7 +328,7 @@ def updateGroupName(id):
     insert = (new_group_name, id)
     create_cursor.execute(sql_statement, insert)
     mariadb_connection.commit()
-    print(f"\nSUCCESSFULLY UPDATED {id}'s GROUP NAME!\n")
+    print(f"\nSUCCESSFULLY UPDATED {id}'s GROUP NAME to {new_group_name}!\n")
 
 def updateGroupMoneyOwed(id):
     sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
@@ -420,19 +423,18 @@ def showUpdateGroupMenu():
         break
 
 def deleteGroup():
-    sql_statement = "SELECT groupID FROM GROUPING"
-    create_cursor.execute(sql_statement)
-    result = create_cursor.fetchall()
-    list_of_ids = [id[0] for id in result]
     selected_groupId = input("Enter Group ID: ")
-    if (selected_groupId in list_of_ids):
+    if (gq.isGroupIDValid(selected_groupId, create_cursor)):
         sql_statement = "DELETE from grouping where groupID = %s"
-        create_cursor.execute(sql_statement, (selected_groupId,))
-        mariadb_connection.commit()
+        try:
+            create_cursor.execute(sql_statement, (selected_groupId,))
+            mariadb_connection.commit()
+            print(f"SUCCESSFULLY DELETED GROUP {selected_groupId}!")
+        except:
+            print("\nCANNOT DELETE GROUP BECAUSE IT IS REFERENCED AS A FOREIGN KEY")
     else:
         print(f"GROUD ID {selected_groupId} was not found!")
         
-
 def viewAllGroups():
     sql_statement = "SELECT * FROM GROUPING"
     create_cursor.execute(sql_statement)
