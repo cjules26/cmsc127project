@@ -115,8 +115,6 @@ def addUser():
         userID = "U1"
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
-        # moneyOwed = float(input("Enter Money Owed: "))
-        # moneyLent = float(input("Enter Money Lent: "))
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s)'
         insert = (userID,fName,lName,0,0)
         create_cursor.execute(sql_statement, insert)
@@ -124,9 +122,6 @@ def addUser():
         userID = "U" + str(userIDcount + 1)
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
-        # moneyOwed = float(input("Enter Money Owed: "))
-        # moneyLent = float(input("Enter Money Lent: "))
-        # borrowerId = input("Enter borrower ID: ")
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s,%s)'
         insert = (userID,fName,lName,0,0,"U1")
         create_cursor.execute(sql_statement, insert)
@@ -308,18 +303,13 @@ def userMenu():
 def addGroup():
     create_cursor.execute("SELECT COUNT(groupID) FROM GROUPING")
     row = create_cursor.fetchone()
-    groupIDcount = row[0] if row > 0 else 0
-    groupID = "G1"
-    if groupIDcount > 0:
-        sql_statement = "SELECT * from EXPENSE order by length(expenseID), (substring(expenseID, length(expenseID)))"
-        create_cursor.execute(sql_statement)
-        result = create_cursor.fetchall()
-        result = result[-1][0][1:]
-        groupID =  f"G{int(result) + 1}"
+    groupIDcount = row[0] if row else 0
+    if groupIDcount == 0:
+        groupID = "G1"
+    else:
+        groupID = "G" + str(groupIDcount + 1)
 
     groupName = input("Enter Group Name: ")
-    # moneyOwed = float(input("Enter Money Owed: "))
-    # moneyLent = float(input("Enter Money Lent: "))
     sql_statement = 'INSERT INTO GROUPING VALUES(%s,%s,%s,%s)'
     insert = (groupID,groupName,0,0)
     create_cursor.execute(sql_statement, insert)
@@ -612,21 +602,31 @@ def insertExpense():
     #userID and groupID's default values are null
     userID = None
     groupID = None
+    senderType = None
+    recipientType = None
 
     #If recipient and sender are groups
     if (gq.isGroupIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
         groupID = sender
+        senderType = "group"
+        recipientType = "group"
     #If recipient is Group and sender is User
     elif (gq.isGroupIDValid(recipient, create_cursor) and gq.isUserIDValid(sender, create_cursor)):
         groupID = recipient
         userID = sender
+        senderType = "user"
+        recipientType = "group"
     #If recipient is User and sender is Group
     elif (gq.isUserIDValid(recipient, create_cursor) and gq.isGroupIDValid(sender, create_cursor)):
         groupID = sender
         userID = recipient
+        senderType = "group"
+        recipientType = "user"
     #If recipient and sender are users
     elif (gq.isUserIDValid(recipient, create_cursor) and gq.isUserIDValid(sender, create_cursor)):
         userID = sender
+        senderType = "user"
+        recipientType = "user"
 
     #Validate Date Owed
     dateOwed = None
@@ -639,6 +639,7 @@ def insertExpense():
     
     #Configure Date Paid
     datePaid = None
+    paid = "n"
     while(True):
         paid = input("Transaction was paid? (y/n): ") 
         if (paid == "y"):
@@ -646,7 +647,7 @@ def insertExpense():
                 datePaid = input("\nEnter date paid: ")
                 if (gq.isValidDate(datePaid)):
                     if (gq.isDateBeyond(datePaid, dateOwed, create_cursor)):
-                        return
+                        break
                     else:
                         print("Cannot set Date Paid before Date Owed!")
                 else:
@@ -661,6 +662,36 @@ def insertExpense():
     sql_statement = "INSERT INTO EXPENSE VALUES(%s, %s, %s, %s, str_to_date(%s, '%Y-%m-%d'), str_to_date(%s, '%Y-%m-%d'), %s, %s)"
     create_cursor.execute(sql_statement, (next_id, amount, sender, recipient, dateOwed, datePaid, userID, groupID)   )
     print("AN EXPENSE WAS INSERTED SUCCESSFULLY")
+
+    if paid == "n":
+        if (senderType == "group" and recipientType == "group"):
+            # update sender values
+            sql_statement = "UPDATE grouping SET moneyLent=moneyLent+%s WHERE groupID=%s"
+            create_cursor.execute(sql_statement, (amount, sender))
+
+            # update recipient values
+            sql_statement = "UPDATE grouping SET moneyOwed=moneyOwed+%s WHERE groupID=%s"
+            create_cursor.execute(sql_statement, (amount, recipient))
+
+        elif (senderType == "user" and recipientType == "group"):
+            # update group values
+            sql_statement = "UPDATE grouping SET moneyOwed=moneyOwed+%s WHERE groupID=%s"
+            create_cursor.execute(sql_statement, (amount, recipient))
+
+        elif (senderType == "group" and recipientType == "user"):
+            # update group values
+            sql_statement = "UPDATE grouping SET moneyLent=moneyLent+%s WHERE groupID=%s"
+            create_cursor.execute(sql_statement, (amount, sender))
+
+        elif (senderType == "user" and recipientType == "user"):
+            # update sender values
+            sql_statement = "UPDATE person SET moneyLent=moneyLent+%s WHERE userID=%s"
+            create_cursor.execute(sql_statement, (amount, sender))
+
+            # update recipient values
+            sql_statement = "UPDATE person SET moneyOwed=moneyOwed+%s WHERE userID=%s"
+            create_cursor.execute(sql_statement, (amount, recipient))
+
     mariadb_connection.commit()
     
 def deleteExpense():
