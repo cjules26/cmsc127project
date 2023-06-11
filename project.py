@@ -1,7 +1,4 @@
 import mysql.connector as mariadb 
-from tabulate import tabulate
-import re
-import general_queries as gq
 import person as p
 import group as g
 import expense as e
@@ -130,7 +127,6 @@ def menu():
         else:
             print("Invalid Choice!!!")
             continue
-
 
 menu()
 

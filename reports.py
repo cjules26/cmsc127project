@@ -1,6 +1,4 @@
 from tabulate import tabulate
-import re
-import general_queries as gq
 import expense as e
 import group as g
 
