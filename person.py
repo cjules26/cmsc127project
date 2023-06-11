@@ -1,6 +1,7 @@
 from tabulate import tabulate
 import re
 
+
 def format_decimal(value):
     decimal_part = value % 1
     # no decimal part to print
@@ -8,6 +9,7 @@ def format_decimal(value):
         return "%.0f" % value
     else:
         return "%.2f" % value
+
 
 def addUser(create_cursor, commit):
     create_cursor.execute("SELECT COUNT(userID) FROM PERSON")
@@ -18,19 +20,20 @@ def addUser(create_cursor, commit):
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s)'
-        insert = (userID,fName,lName,0,0)
+        insert = (userID, fName, lName, 0, 0)
         create_cursor.execute(sql_statement, insert)
     else:
         userID = "U" + str(userIDcount + 1)
         fName = input("Enter First Name: ")
         lName = input("Enter Last Name: ")
         sql_statement = 'INSERT INTO PERSON VALUES(%s,%s,%s,%s,%s,%s)'
-        insert = (userID,fName,lName,0,0,"U1")
+        insert = (userID, fName, lName, 0, 0, "U1")
         create_cursor.execute(sql_statement, insert)
     print("\nSuccessfully added Person!\n")
     commit
 
-def updateFirstName(id,create_cursor, commit):
+
+def updateFirstName(id, create_cursor, commit):
     sql_statement = "SELECT fName FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -42,7 +45,8 @@ def updateFirstName(id,create_cursor, commit):
     commit
     print(f"\nSuccessfully updated {id}'s First Name!\n")
 
-def updateLastName(id,create_cursor, commit):
+
+def updateLastName(id, create_cursor, commit):
     sql_statement = "SELECT lName FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -54,7 +58,8 @@ def updateLastName(id,create_cursor, commit):
     commit
     print(f"\nSuccessfully updated {id}'s Last Name!\n")
 
-def updatePersonMoneyOwed(id,create_cursor, commit):
+
+def updatePersonMoneyOwed(id, create_cursor, commit):
     sql_statement = "SELECT moneyOwed FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -72,7 +77,8 @@ def updatePersonMoneyOwed(id,create_cursor, commit):
     commit
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
 
-def updatePersonMoneyLent(id,create_cursor, commit):
+
+def updatePersonMoneyLent(id, create_cursor, commit):
     sql_statement = "SELECT moneyLent FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -84,14 +90,15 @@ def updatePersonMoneyLent(id,create_cursor, commit):
             break
         except:
             print("Invalid input.")
-        
+
     sql_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
     insert = (updated_money_lent, id)
     create_cursor.execute(sql_statement, insert)
     commit
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
-def showUpdatePersonMenu(create_cursor,commit):
+
+def showUpdatePersonMenu(create_cursor, commit):
     while True:
         sql_statement = "SELECT userID FROM person"
         create_cursor.execute(sql_statement)
@@ -107,39 +114,43 @@ def showUpdatePersonMenu(create_cursor,commit):
         else:
             break
 
-    while(True):
+    while (True):
         print("\n****SELECT UPDATE****")
         print("[1] Update First Name")
         print("[2] Update Last Name")
         print("[3] Update Money Owed")
         print("[4] Update Money Lent")
-            
-        choice = input("Please enter choice: ") 
+
+        choice = input("Please enter choice: ")
 
         if (choice == "1"):
-            updateFirstName(id,create_cursor, commit)
-        elif (choice =="2"):
-            updateLastName(id,create_cursor, commit)
+            updateFirstName(id, create_cursor, commit)
+        elif (choice == "2"):
+            updateLastName(id, create_cursor, commit)
         elif (choice == "3"):
-            updatePersonMoneyOwed(id,create_cursor, commit)
+            updatePersonMoneyOwed(id, create_cursor, commit)
         elif (choice == "4"):
-            updatePersonMoneyLent(id,create_cursor, commit)
+            updatePersonMoneyLent(id, create_cursor, commit)
         else:
             print("INVALID CHOICE!!")
             continue
         print()
         break
 
+
 def viewAllPerson(create_cursor):
     sql_statement = "SELECT * FROM person"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
-    table_data = [["userID", "First Name","Last Name", "Money Owed", "Money Lent", "borrowerID"]]
+    table_data = [["userID", "First Name", "Last Name",
+                   "Money Owed", "Money Lent", "borrowerID"]]
     for res in result:
-        person_data = [res[0], res[1], res[2], str(res[3]), str(res[4]), res[5]]
+        person_data = [res[0], res[1], res[2],
+                       str(res[3]), str(res[4]), res[5]]
         table_data.append(person_data)
     print("CURRENT PERSONS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
 
 def searchPerson(create_cursor):
     while True:
@@ -156,11 +167,11 @@ def searchPerson(create_cursor):
             return
         else:
             break
-        
+
     sql_statement = "SELECT * FROM person WHERE userID=%s"
     sql_data = (id,)
     create_cursor.execute(sql_statement, sql_data)
-    person =  create_cursor.fetchone()
+    person = create_cursor.fetchone()
     print("\nVIEWING PERSON...\n")
     print(" userID:", person[0])
     print(" First Name:", person[1])
@@ -187,7 +198,7 @@ def deletePerson(create_cursor, commit):
             break
 
     sql_statement = "DELETE from person where userID = %s"
-    create_cursor.execute(sql_statement,(id,))
+    create_cursor.execute(sql_statement, (id,))
     commit
     print("Successfully deleted!")
 
@@ -197,22 +208,22 @@ def userMenu(create_cursor, commit):
     while (choice != 0):
         print("\n**********USER MENU*********")
         print("[1] Add User")
-        print("[2] Update User")
-        print("[3] Delete User")
-        print("[4] Search User")
+        print("[2] Delete User")
+        print("[3] Search User")
+        print("[4] Update User")
         print("[5] View All Users")
         print("[0] Return\n")
-        
-        choice = input("Please enter choice: ")  
+
+        choice = input("Please enter choice: ")
 
         if choice == "1":
             addUser(create_cursor, commit)
         elif choice == "2":
-            showUpdatePersonMenu(create_cursor, commit)
-        elif choice == "3":
             deletePerson(create_cursor, commit)
-        elif choice == "4":
+        elif choice == "3":
             searchPerson(create_cursor)
+        elif choice == "4":
+            showUpdatePersonMenu(create_cursor, commit)
         elif choice == "5":
             viewAllPerson(create_cursor)
         elif choice == "0":
