@@ -177,7 +177,7 @@ def searchPerson(create_cursor):
     print(" First Name:", person[1])
     print(" Last Name: ", person[2])
     print(" Money Owed:", format_decimal(person[3]))
-    print(" Money Lent by Group:", format_decimal(person[4]))
+    print(" Money Lent:", format_decimal(person[4]))
     print(" borrowerID: ", person[5])
 
 
@@ -196,11 +196,19 @@ def deletePerson(create_cursor, commit):
             return
         else:
             break
-
-    sql_statement = "DELETE from person where userID = %s"
-    create_cursor.execute(sql_statement, (id,))
-    commit
-    print("Successfully deleted!")
+    try:
+        lent_statement = "SELECT moneyLent from person where userID = %s"
+        lent = create_cursor.execute(lent_statement,(id,))
+        lent = create_cursor.fetchone()
+        lent = lent[0]
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed - %s where userID ='U1'"
+        sql_statement = "DELETE from person where userID = %s"
+        create_cursor.execute(updateMoneyOwed,(lent,))
+        create_cursor.execute(sql_statement,(id,))
+        commit
+        print("Successfully deleted!")
+    except:
+        print("\nCANNOT DELETE PERSON BECAUSE IT IS REFERENCED AS A FOREIGN KEY")    
 
 
 def userMenu(create_cursor, commit):
