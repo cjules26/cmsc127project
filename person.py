@@ -71,11 +71,23 @@ def updatePersonMoneyOwed(id, create_cursor, commit):
             break
         except:
             print("Invalid input.")
-    sql_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
-    insert = (updated_money_owed, id)
-    create_cursor.execute(sql_statement, insert)
-    commit
-    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
+    try:
+        select_money_owed = "SELECT moneyOwed FROM person where userID = %s"
+        owed = create_cursor.execute(select_money_owed, (id,))
+        owed = create_cursor.fetchone()
+        owed = float(owed[0])
+        owed_difference = updated_money_owed - owed
+        update_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
+        insert = (updated_money_owed, id)
+        updateMoneyLent = "UPDATE person set moneyLent = moneyLent + %s where userID= 'U1'"
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed - %s where userId = 'U1'"
+        create_cursor.execute(update_statement, insert)
+        create_cursor.execute(updateMoneyLent, (owed_difference,))
+        create_cursor.execute(updateMoneyOwed, (owed_difference,))
+        commit
+        print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
+    except:
+        print(f"FAILED TO UPDATE {id}'s MONEY OWED")
 
 
 def updatePersonMoneyLent(id, create_cursor, commit):
@@ -90,13 +102,21 @@ def updatePersonMoneyLent(id, create_cursor, commit):
             break
         except:
             print("Invalid input.")
-
-    sql_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
-    insert = (updated_money_lent, id)
-    create_cursor.execute(sql_statement, insert)
-    commit
-    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
-
+    try:
+        select_money_lent = "SELECT moneyLent FROM person where userID = %s"
+        lent = create_cursor.execute(select_money_lent, (id,))
+        lent = create_cursor.fetchone()
+        lent = lent[0]
+        lent_difference = updated_money_lent - float(lent)
+        update_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
+        insert = (updated_money_lent, id)
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed + %s where userID= 'U1'"
+        create_cursor.execute(update_statement, insert)
+        create_cursor.execute(updateMoneyOwed, (lent_difference,))
+        commit
+        print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
+    except:
+        print(f"FAILED TO UPDATE {id}'s MONEY LENT")
 
 def showUpdatePersonMenu(create_cursor, commit):
     while True:
