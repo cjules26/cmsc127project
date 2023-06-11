@@ -1,18 +1,20 @@
-import mysql.connector as mariadb 
+import mysql.connector as mariadb
 import person as p
 import group as g
 import expense as e
 import reports as r
 import tables as t
 
+
 def menu():
     print("User: root")
     pword = input("Enter password: ")
-    mariadb_connection = mariadb.connect(user ='root', password = pword, host='localhost', port='3306')
+    mariadb_connection = mariadb.connect(
+        user='root', password=pword, host='localhost', port='3306')
     create_cursor = mariadb_connection.cursor(buffered=True)
     create_cursor_commit = mariadb_connection.commit()
 
-    t.createDatabase(create_cursor,create_cursor_commit)
+    t.createDatabase(create_cursor, create_cursor_commit)
 
     choice = -1
     while (choice != 0):
@@ -22,9 +24,9 @@ def menu():
         print("[3] Expense")
         print("[4] Generate Reports")
         print("[0] Exit\n")
-        
-        choice = input("Please enter choice: ") 
-        
+
+        choice = input("Please enter choice: ")
+
         if choice == "1":
             p.userMenu(create_cursor, create_cursor_commit)
         elif choice == "2":
@@ -39,8 +41,9 @@ def menu():
         else:
             print("Invalid Choice!!!")
             continue
-        
-    create_cursor.close()   
+
+    create_cursor.close()
     mariadb_connection.close()
+
 
 menu()

@@ -1,5 +1,5 @@
 def createDatabase(create_cursor, create_cursor_commit):
-        
+
     create_cursor.execute("DROP DATABASE IF EXISTS `app`")
 
     create_cursor.execute("CREATE DATABASE IF NOT EXISTS `app`")
@@ -87,3 +87,4 @@ def createDatabase(create_cursor, create_cursor_commit):
         print("TABLES:")
         for table in tables:
             print(" ", table[0])
+        print()
