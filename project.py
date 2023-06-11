@@ -11,6 +11,8 @@ mariadb_connection = mariadb.connect(user ='root', password = pword, host='local
 
 create_cursor = mariadb_connection.cursor(buffered=True)
 
+create_cursor_commit = mariadb_connection.commit()
+
 create_cursor.execute("DROP DATABASE IF EXISTS `app`")
 
 create_cursor.execute("CREATE DATABASE IF NOT EXISTS `app`")
@@ -807,7 +809,7 @@ def menu():
         choice = input("Please enter choice: ") 
         
         if choice == "1":
-            p.userMenu()
+            p.userMenu(create_cursor, create_cursor_commit)
         elif choice == "2":
             groupMenu()
         elif choice == "3":

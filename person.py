@@ -2,12 +2,6 @@ import mysql.connector as mariadb
 from tabulate import tabulate
 import re
 
-mariadb_connection = mariadb.connect(user ='root', password = "mariadb26", host='localhost', port='3306')
-
-create_cursor = mariadb_connection.cursor(buffered=True)
-
-create_cursor.execute("USE app")
-
 def format_decimal(value):
     decimal_part = value % 1
     # no decimal part to print
@@ -16,7 +10,7 @@ def format_decimal(value):
     else:
         return "%.2f" % value
 
-def addUser():
+def addUser(create_cursor, commit):
     create_cursor.execute("SELECT COUNT(userID) FROM PERSON")
     row = create_cursor.fetchone()
     userIDcount = row[0] if row else 0
@@ -35,9 +29,9 @@ def addUser():
         insert = (userID,fName,lName,0,0,"U1")
         create_cursor.execute(sql_statement, insert)
     print("\nSuccessfully added Person!\n")
-    mariadb_connection.commit()
+    commit
 
-def updateFirstName(id):
+def updateFirstName(id,create_cursor, commit):
     sql_statement = "SELECT fName FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -46,10 +40,10 @@ def updateFirstName(id):
     sql_statement = "UPDATE person SET fName = %s WHERE userID = %s"
     insert = (new_first_name, id)
     create_cursor.execute(sql_statement, insert)
-    mariadb_connection.commit()
+    commit
     print(f"\nSuccessfully updated {id}'s First Name!\n")
 
-def updateLastName(id):
+def updateLastName(id,create_cursor, commit):
     sql_statement = "SELECT lName FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -58,10 +52,10 @@ def updateLastName(id):
     sql_statement = "UPDATE person SET lName = %s WHERE userID = %s"
     insert = (new_last_name, id)
     create_cursor.execute(sql_statement, insert)
-    mariadb_connection.commit()
+    commit
     print(f"\nSuccessfully updated {id}'s Last Name!\n")
 
-def updatePersonMoneyOwed(id):
+def updatePersonMoneyOwed(id,create_cursor, commit):
     sql_statement = "SELECT moneyOwed FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -76,10 +70,10 @@ def updatePersonMoneyOwed(id):
     sql_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
-    mariadb_connection.commit()
+    commit
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
 
-def updatePersonMoneyLent(id):
+def updatePersonMoneyLent(id,create_cursor, commit):
     sql_statement = "SELECT moneyLent FROM person where userID = %s"
     create_cursor.execute(sql_statement, (id,))
     result = create_cursor.fetchone()[0]
@@ -95,10 +89,10 @@ def updatePersonMoneyLent(id):
     sql_statement = "UPDATE person SET moneyLent = %s WHERE userID = %s"
     insert = (updated_money_lent, id)
     create_cursor.execute(sql_statement, insert)
-    mariadb_connection.commit()
+    commit
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
-def showUpdatePersonMenu():
+def showUpdatePersonMenu(create_cursor,commit):
     while True:
         sql_statement = "SELECT userID FROM person"
         create_cursor.execute(sql_statement)
@@ -124,20 +118,20 @@ def showUpdatePersonMenu():
         choice = input("Please enter choice: ") 
 
         if (choice == "1"):
-            updateFirstName(id)
+            updateFirstName(id,create_cursor, commit)
         elif (choice =="2"):
-            updateLastName(id)
+            updateLastName(id,create_cursor, commit)
         elif (choice == "3"):
-            updatePersonMoneyOwed(id)
+            updatePersonMoneyOwed(id,create_cursor, commit)
         elif (choice == "4"):
-            updatePersonMoneyLent(id)
+            updatePersonMoneyLent(id,create_cursor, commit)
         else:
             print("INVALID CHOICE!!")
             continue
         print()
         break
 
-def viewAllPerson():
+def viewAllPerson(create_cursor):
     sql_statement = "SELECT * FROM person"
     create_cursor.execute(sql_statement)
     result = create_cursor.fetchall()
@@ -148,7 +142,7 @@ def viewAllPerson():
     print("CURRENT PERSONS")
     print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
 
-def searchPerson():
+def searchPerson(create_cursor):
     while True:
         sql_statement = "SELECT userID FROM person"
         create_cursor.execute(sql_statement)
@@ -177,7 +171,7 @@ def searchPerson():
     print(" borrowerID: ", person[5])
 
 
-def deletePerson():
+def deletePerson(create_cursor, commit):
     while True:
         sql_statement = "SELECT userID FROM person"
         create_cursor.execute(sql_statement)
@@ -195,11 +189,11 @@ def deletePerson():
 
     sql_statement = "DELETE from person where userID = %s"
     create_cursor.execute(sql_statement,(id,))
-    mariadb_connection.commit()
+    commit
     print("Successfully deleted!")
 
 
-def userMenu():
+def userMenu(create_cursor, commit):
     choice = -1
     while (choice != 0):
         print("\n**********USER MENU*********")
@@ -213,15 +207,15 @@ def userMenu():
         choice = input("Please enter choice: ")  
 
         if choice == "1":
-            addUser()
+            addUser(create_cursor, commit)
         elif choice == "2":
-            showUpdatePersonMenu()
+            showUpdatePersonMenu(create_cursor, commit)
         elif choice == "3":
-            deletePerson()
+            deletePerson(create_cursor, commit)
         elif choice == "4":
-            searchPerson()
+            searchPerson(create_cursor)
         elif choice == "5":
-            viewAllPerson()
+            viewAllPerson(create_cursor)
         elif choice == "0":
             print()
             break
