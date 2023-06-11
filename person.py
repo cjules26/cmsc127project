@@ -1,4 +1,3 @@
-import mysql.connector as mariadb 
 from tabulate import tabulate
 import re
 
