@@ -646,7 +646,7 @@ def insertExpense():
                 datePaid = input("\nEnter date paid: ")
                 if (gq.isValidDate(datePaid)):
                     if (gq.isDateBeyond(datePaid, dateOwed, create_cursor)):
-                        return
+                        break
                     else:
                         print("Cannot set Date Paid before Date Owed!")
                 else:
@@ -774,10 +774,19 @@ def updateExpenseRecipient(id):
 
 def updateDateOwed(id):
     new_date_owed = None
+    sql_statement = "SELECT datePaid, dateOwed from EXPENSE where expenseID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()
+    print(f"DATE PAID: {result[0]}")
+    print(f"DATE OWED: {result[1]}")
     while (True):
         new_date_owed = input("\nEnter new date owed: ")
         if (gq.isValidDate(new_date_owed)):
-            break
+            if result[0] == None or gq.isDateBehind(new_date_owed, result[0], create_cursor):
+                print("UPDATED DATE OWED SUCCESSFULLY!")
+                break
+            else:
+                print("\nCannot set Date Owed After Date Paid!")
         else:
             print("Invalid date!")
     sql_statement = "UPDATE EXPENSE SET dateOwed = %s where expenseID = %s"
@@ -786,10 +795,19 @@ def updateDateOwed(id):
 
 def updateDatePaid(id):
     new_date_paid = None
+    sql_statement = "SELECT datePaid, dateOwed from EXPENSE where expenseID = %s"
+    create_cursor.execute(sql_statement, (id,))
+    result = create_cursor.fetchone()
+    print(f"DATE PAID: {result[0]}")
+    print(f"DATE OWED: {result[1]}")
     while (True):
-        new_date_owed = input("\nEnter new date paid: ")
+        new_date_paid = input("\nEnter new date paid: ")
         if (gq.isValidDate(new_date_paid)):
-            break
+            if gq.isDateBeyond(new_date_paid, result[0], create_cursor):
+                print("UPDATED DATE PAID SUCCESSFULLY!")
+                break
+            else:
+                print("\nCannot set Date Paid Before Date Owed!")
         else:
             print("Invalid date!")
     sql_statement = "UPDATE EXPENSE SET datePaid = %s where expenseID = %s"
