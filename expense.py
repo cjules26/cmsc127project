@@ -413,27 +413,33 @@ def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
             print("\nInvalid recipientID!")
         elif (new_recipient == sender):
             print("\nCannot set recepientID equal to senderID!")
-        
+        #if new recipient is a user
         elif (gq.isUserIDValid(new_recipient, create_cursor)):
+            #if sender is a group, set userID equal to new_recipient
             if (gq.isGroupIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, new_recipient, id))
+            #if sender is a user and recipient is a group, set groupID equal to null
             elif (gq.isUserIDValid(sender, create_cursor) and gq.isGroupIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, None, id))
+            #if sender and recipients are both users
             else:
                 statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, id))
             print("\nSUCCESSFULLY UPDATED RECIPIENT!")
             break
-        
+        #if new_recipient is a group
         else:
+            #if sender is a user
             if (gq.isUserIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, new_recipient, id))
+            #if sender is a group and recipient is a user, set userID equal to null
             elif (gq.isGroupIDValid(sender, create_cursor) and gq.isUserIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, None, id))
+            #if both sender and receiver are groups
             else:
                 statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, id))
@@ -452,7 +458,9 @@ def updateDateOwed(id, create_cursor, create_cursor_commit):
     print(f"DATE OWED: {result[1]}")
     while (True):
         new_date_owed = input("\nEnter new date owed: ")
+        #if new date owed is a valid date
         if (gq.isValidDate(new_date_owed)):
+            #if expense is not yet paid or date paid comes after date owed
             if result[0] == None or gq.isDateBehind(new_date_owed, result[0], create_cursor):
                 print("UPDATED DATE OWED SUCCESSFULLY!")
                 break
@@ -474,7 +482,9 @@ def updateDatePaid(id, create_cursor, create_cursor_commit):
     print(f"DATE OWED: {result[1]}")
     while (True):
         new_date_paid = input("\nEnter new date paid: ")
+        #if new date paid is a valid date
         if (gq.isValidDate(new_date_paid)):
+            #if new date paid comes after date owed
             if gq.isDateBeyond(new_date_paid, result[0], create_cursor):
                 print("UPDATED DATE PAID SUCCESSFULLY!")
                 break
