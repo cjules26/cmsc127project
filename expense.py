@@ -310,13 +310,14 @@ def updateExpenseAmount(id, create_cursor, create_cursor_commit):
 
 
 def updateExpenseSender(id, create_cursor, create_cursor_commit):
-    statement = "SELECT sender, recipient, amount from EXPENSE where expenseID = %s"
+    statement = "SELECT sender, recipient, amount, datePaid from EXPENSE where expenseID = %s"
     create_cursor.execute(statement, (id,))
     result = create_cursor.fetchone()
     sender = result[0]
     recipient = result[1]
     print(f"CURRENT EXPENSE SENDERID: {result[0]}")
     amount = result[2]
+    paid = "y" if result[3] else "n"
 
     while (True):
         new_sender = input("Update new senderID: ")
@@ -330,33 +331,36 @@ def updateExpenseSender(id, create_cursor, create_cursor_commit):
             if (gq.isUserIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET sender = %s, userID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, new_sender, id))
-                # deduct from orig_sender user
-                statement = "UPDATE person SET moneyLent=moneyLent-%s where userID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender user
-                statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender user
+                    statement = "UPDATE person SET moneyLent=moneyLent-%s where userID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender user
+                    statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
             # orig_sender is group, recipient is user
             elif (gq.isGroupIDValid(sender, create_cursor) and gq.isUserIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, new_sender, None, id))
-                # deduct from orig_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender user
-                statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender user
+                    statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
 
             # orig_sender is group, recipient is group
             else:
                 statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, new_sender, recipient, id))
-                # deduct from orig_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender user
-                statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender user
+                    statement = "UPDATE person SET moneyLent=moneyLent+%s where userID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
 
             print("\nSUCCESSFULLY UPDATED SENDER!")
             break
@@ -366,34 +370,37 @@ def updateExpenseSender(id, create_cursor, create_cursor_commit):
             if (gq.isGroupIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET sender = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, new_sender, id))
-                # deduct from orig_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent-%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
 
             # orig_sender is user, recipient is group
             elif (gq.isUserIDValid(sender, create_cursor) and gq.isGroupIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, None, new_sender, id))
-                # deduct from orig_sender user
-                statement = "UPDATE user SET moneyLent=moneyLent-%s where userID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender user
+                    statement = "UPDATE user SET moneyLent=moneyLent-%s where userID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
 
             # orig_sender is user, recipient is user
             else:
                 statement = "UPDATE EXPENSE SET sender = %s, userID = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_sender, recipient, new_sender, id))
-                # deduct from orig_sender user
-                statement = "UPDATE person SET moneyLent=moneyLent-%s where userID = %s"
-                create_cursor.execute(statement, (amount, sender))
-                # add to new_sender group
-                statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
-                create_cursor.execute(statement, (amount, new_sender))
+                if (not paid):
+                    # deduct from orig_sender user
+                    statement = "UPDATE person SET moneyLent=moneyLent-%s where userID = %s"
+                    create_cursor.execute(statement, (amount, sender))
+                    # add to new_sender group
+                    statement = "UPDATE grouping SET moneyLent=moneyLent+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_sender))
 
             print("\nSUCCESSFULLY UPDATED SENDER!")
             break
@@ -401,12 +408,15 @@ def updateExpenseSender(id, create_cursor, create_cursor_commit):
     create_cursor_commit
 
 def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
-    statement = "SELECT sender, recipient from EXPENSE where expenseID = %s"
+    statement = "SELECT sender, recipient, amount, datePaid from EXPENSE where expenseID = %s"
     create_cursor.execute(statement, (id,))
     result = create_cursor.fetchone()
     sender = result[0]
     recipient = result[1]
+    amount = result[2]
+    paid = "y" if result[3] else "n"
     print(f"CURRENT EXPENSE RECPIENTID: {result[1]}")
+
     while (True):
         new_recipient = input("Update new recipientID: ")
         if (not gq.isGroupIDValid(new_recipient, create_cursor) and not gq.isUserIDValid(new_recipient, create_cursor)):
@@ -419,14 +429,47 @@ def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
             if (gq.isGroupIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, new_recipient, id))
+                if (not paid):
+                    if (gq.isUserIDValid(recipient, create_cursor)):
+                        # deduct from orig_recipient user
+                        statement = "UPDATE person SET moneyOwed=moneyOwed-%s where userID = %s"
+                        create_cursor.execute(statement, (amount, recipient))
+                    elif (gq.isGroupIDValid(recipient, create_cursor)):
+                        # deduct from orig_recipient group
+                        statement = "UPDATE grouping SET moneyOwed=moneyOwed-%s where groupID = %s"
+                        create_cursor.execute(statement, (amount, recipient))
+
+                # add to new_recipient user
+                statement = "UPDATE person SET moneyOwed=moneyOwed+%s where userID = %s"
+                create_cursor.execute(statement, (amount, new_recipient))
+
             #if sender is a user and recipient is a group, set groupID equal to null
             elif (gq.isUserIDValid(sender, create_cursor) and gq.isGroupIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, None, id))
+
+                if (not paid):
+                    # deduct from orig_recipient group
+                    statement = "UPDATE grouping SET moneyOwed=moneyOwed-%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, recipient))
+                    # add to new_recipient user
+                    statement = "UPDATE person SET moneyOwed=moneyOwed+%s where userID = %s"
+                    create_cursor.execute(statement, (amount, new_recipient))
+
+
             #if sender and recipients are both users
             else:
                 statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, id))
+
+                if (not paid):
+                    # deduct from orig_recipient user
+                    statement = "UPDATE person SET moneyOwed=moneyOwed-%s where userID = %s"
+                    create_cursor.execute(statement, (amount, recipient))
+                    # add to new_recipient user
+                    statement = "UPDATE person SET moneyOwed=moneyOwed+%s where userID = %s"
+                    create_cursor.execute(statement, (amount, new_recipient))
+
             print("\nSUCCESSFULLY UPDATED RECIPIENT!")
             break
         #if new_recipient is a group
@@ -435,14 +478,47 @@ def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
             if (gq.isUserIDValid(sender, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, groupID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, new_recipient, id))
+                
+                if (not paid):
+                    if (gq.isUserIDValid(recipient, create_cursor)):
+                        # deduct from orig_recipient user
+                        statement = "UPDATE person SET moneyOwed=moneyOwed-%s where userID = %s"
+                        create_cursor.execute(statement, (amount, recipient))
+                    elif (gq.isGroupIDValid(recipient, create_cursor)):
+                        # deduct from orig_recipient group
+                        statement = "UPDATE grouping SET moneyOwed=moneyOwed-%s where groupID = %s"
+                        create_cursor.execute(statement, (amount, recipient))
+
+                    # add to new_recipient group
+                    statement = "UPDATE grouping SET moneyOwed=moneyOwed+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_recipient))
+
             #if sender is a group and recipient is a user, set userID equal to null
             elif (gq.isGroupIDValid(sender, create_cursor) and gq.isUserIDValid(recipient, create_cursor)):
                 statement = "UPDATE EXPENSE SET recipient = %s, userID = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, None, id))
+
+                if (not paid):
+                    # deduct from orig_recipient user
+                    statement = "UPDATE person SET moneyOwed=moneyOwed-%s where userID = %s"
+                    create_cursor.execute(statement, (amount, recipient))
+                    # add to new_recipient group
+                    statement = "UPDATE grouping SET moneyOwed=moneyOwed+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_recipient))
+
             #if both sender and receiver are groups
             else:
                 statement = "UPDATE EXPENSE SET recipient = %s where expenseID = %s"
                 create_cursor.execute(statement, (new_recipient, id))
+
+                if (not paid):
+                    # deduct from orig_recipient group
+                    statement = "UPDATE grouping SET moneyOwed=moneyOwed-%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, recipient))
+                    # add to new_recipient group
+                    statement = "UPDATE grouping SET moneyOwed=moneyOwed+%s where groupID = %s"
+                    create_cursor.execute(statement, (amount, new_recipient))
+
             print("\nSUCCESSFULLY UPDATED RECIPIENT!")
             break
 
