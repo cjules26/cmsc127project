@@ -3,7 +3,22 @@ import person as p
 import group as g
 import expense as e
 import reports as r
-import tables as t
+
+def run_sql_file(file_path, create_cursor, create_cursor_commit):
+    # Read the contents of the SQL file
+    with open(file_path, 'r') as sql_file:
+        sql_script = sql_file.read()
+
+    # Split the SQL script into individual statements
+    statements = sql_script.split(';')
+    statements = statements[:-1]  # need to remove last element
+
+    # Execute each SQL statement
+    for statement in statements:
+        statement = statement + ";"
+        create_cursor.execute(statement)
+
+    create_cursor_commit()
 
 
 def menu():
@@ -16,7 +31,10 @@ def menu():
     def create_cursor_commit():
         mariadb_connection.commit()
 
-    t.createDatabase(create_cursor, create_cursor_commit)
+    sql_file_path = 'app_mysql.sql'
+    run_sql_file(sql_file_path, create_cursor, create_cursor_commit)
+
+    #t.createDatabase(create_cursor, create_cursor_commit)
 
     choice = -1
     while (choice != 0):
