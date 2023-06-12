@@ -55,11 +55,23 @@ def updateGroupMoneyOwed(id,create_cursor, commit):
             break
         except:
             print("Invalid input.")
-    sql_statement = "UPDATE grouping SET moneyOwed = %s WHERE groupID = %s"
-    insert = (updated_money_owed, id)
-    create_cursor.execute(sql_statement, insert)
-    commit()
-    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
+    try:        
+        select_money_owed = "SELECT moneyOwed FROM grouping where groupID = %s"
+        owed = create_cursor.execute(select_money_owed, (id,))
+        owed = create_cursor.fetchone()
+        owed = float(owed[0])
+        owed_difference = updated_money_owed - owed
+        updateMoneyLent = "UPDATE person set moneyLent = moneyLent + %s where userID= 'U1'"
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed - %s where userId = 'U1'"
+        sql_statement = "UPDATE grouping SET moneyOwed = %s WHERE groupID = %s"
+        insert = (updated_money_owed, id)
+        create_cursor.execute(updateMoneyLent, (owed_difference,))
+        create_cursor.execute(updateMoneyOwed, (owed_difference,))
+        create_cursor.execute(sql_statement, insert)
+        commit()
+        print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
+    except:
+        print(f"FAILED TO UPDATE {id}'s MONEY OWED")
 
 def updateGroupMoneyLent(id,create_cursor, commit):
     sql_statement = "SELECT moneyOwed FROM GROUPING where groupID = %s"
@@ -73,11 +85,22 @@ def updateGroupMoneyLent(id,create_cursor, commit):
             break
         except:
             print("Invalid input.")
-    sql_statement = "UPDATE grouping SET moneyLent = %s WHERE groupID = %s"
-    insert = (updated_money_lent, id)
-    create_cursor.execute(sql_statement, insert)
-    commit()
-    print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
+    try:
+        select_money_lent = "SELECT moneyLent FROM grouping where groupID = %s"
+        lent = create_cursor.execute(select_money_lent, (id,))
+        lent = create_cursor.fetchone()
+        lent = lent[0]
+        lent_difference = updated_money_lent - float(lent)
+        update_statement = "UPDATE grouping SET moneyLent = %s WHERE groupID = %s"
+        insert = (updated_money_lent, id)
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed + %s where userID= 'U1'"
+        create_cursor.execute(update_statement, insert)
+        create_cursor.execute(updateMoneyOwed, (lent_difference,))
+        commit()
+        print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
+    except:
+        print(f"FAILED TO UPDATE {id}'s MONEY LENT")
+
 
 def showUpdateGroupMenu(create_cursor, commit):
     while True:
@@ -117,12 +140,24 @@ def showUpdateGroupMenu(create_cursor, commit):
 def deleteGroup(create_cursor, commit):
     selected_groupId = input("Enter Group ID: ")
     if (gq.isGroupIDValid(selected_groupId, create_cursor)):
-        groupMoneyLent = "SELECT moneyLent from grouping where groupID = %s"
-        personMoneyOwed = "SELECT moneyOwed from person where userID = 'U1'"
-        update = "UPDATE person set moneyOwed = %s - %s"
-        del_statement = "DELETE from grouping where groupID = %s"
         try:
-            # create_cursor.execute(update, (personMoneyOwed,),(groupMoneyLent, (selected_groupId,)))
+            groupMoneyLent = "SELECT moneyLent from grouping where groupID = %s"
+            groupMoneyOwed = "SELECT moneyOwed from grouping where groupID = %s"
+            personMoneyOwed = "SELECT moneyOwed from person where userID = 'U1'"
+            personMoneyLent = "SELECT moneyLent from person where userID = 'U1'"
+            groupLent = create_cursor.execute(groupMoneyLent,(selected_groupId,))
+            groupLent = create_cursor.fetchone()[0]
+            groupOwed = create_cursor.execute(groupMoneyOwed, (selected_groupId,))
+            groupOwed = create_cursor.fetchone()[0]
+            personLent = create_cursor.execute(personMoneyLent,)
+            personLent = create_cursor.fetchone()[0]
+            personOwed = create_cursor.execute(personMoneyOwed,)
+            personOwed = create_cursor.fetchone()[0]
+            updatePersonOwed = "UPDATE person set moneyOwed = %s - %s where userID = 'U1'"
+            updatePersonLent = "UPDATE person set moneyLent = %s - %s where userID = 'U1'"
+            del_statement = "DELETE from grouping where groupID = %s"
+            create_cursor.execute(updatePersonOwed,(personOwed, groupLent,))
+            create_cursor.execute(updatePersonLent,(personLent, groupOwed,))
             create_cursor.execute(del_statement, (selected_groupId,))
             commit()
             print(f"SUCCESSFULLY DELETED GROUP {selected_groupId}!")

@@ -47,13 +47,14 @@ def createDatabase(create_cursor, create_cursor_commit):
 
     # Execute multiple SQL statements individually
     statements = [
-        'INSERT INTO person VALUES("U1", "Mario", "Beatles", 600, 0, NULL);',
+        'INSERT INTO person VALUES("U1", "Mario", "Beatles", 700, 0, NULL);',
         'INSERT INTO person VALUES("U2", "Lea", "Smith", 0, 100, "U1");',
         'INSERT INTO person VALUES("U3", "Sophia", "Brown", 0, 100, "U1");',
         'INSERT INTO person VALUES("U4", "Daniel", "Taft", 0, 100, "U1");',
         'INSERT INTO person VALUES("U5", "Olivia", "Davis", 0, 100, "U1");',
         'INSERT INTO GROUPING VALUES("G1", "AAA", 0, 100);',
         'INSERT INTO GROUPING VALUES("G2", "BBB", 0, 100);',
+        'INSERT INTO GROUPING VALUES("G3", "CCC", 0, 100);', 
         'INSERT INTO EXPENSE VALUES ("E1", 100, "U2","U1", "2021-07-12", null, "U2", null);',
         'INSERT INTO EXPENSE VALUES ("E2", 100, "U3","U1" , "2022-01-12", null, "U3", null);',
         'INSERT INTO EXPENSE VALUES ("E3", 100, "U4", "U1", "2010-01-02", null, "U4", null);',
