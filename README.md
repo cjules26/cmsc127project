@@ -13,14 +13,13 @@ This app helps user track their expenses made within a friend, or group
 # To run the program:
 1. Open your terminal then run pip install my-sql-connector <br>
 2. Run pip install tabulate <br>
-3. Edit the user and password fields from mariadb_connection variable <br>
-4. Run the program <br>
+3. Run the program <br>
+4. Enter your mariadb password <br>
 
 # NOTES: 
 - Valid Date Format: (YYYY-MM-DD)
 
-
-# PROGRAM  
+# PROGRAM FUNCTIONALITIES
 
 # MENU
 - Menu acts as the homepage of the terminal that displays the routes to USER, GROUP, EXPENSE, and Reports Menus as well as the option to exit the program. 
@@ -68,7 +67,7 @@ This app helps user track their expenses made within a friend, or group
 - Updates USER's money
 - Asks for USER's new money lent amount
 
-#### [4] VIEW ALL USERS
+#### [5] VIEW ALL USERS
 - Displays all the instances of USER existing in the database in tabular format
 
 ## [2] GROUP
@@ -89,6 +88,9 @@ This app helps user track their expenses made within a friend, or group
 - A GROUP cannot be deleted if it is referenced as a foreign key
 - Deducts U1's money owed and money lent by the GROUPS's money owed and money lent, respectively
 
+### [3] SEARCH GROUP
+-Displays all information about the groupID entered
+
 #### [4] UPDATE GROUP
 - Displays menu to update GROUP's name, money owed and money lent.
 - Asks for GROUP ID
@@ -105,10 +107,10 @@ This app helps user track their expenses made within a friend, or group
 - Updates GROUPS's money
 - Asks for GROUPS's new money lent amount
 
-#### [4] VIEW ALL GROUPS
+#### [5] VIEW ALL GROUPS
 - Displays all the instances of GROUP existing in the database in tabular format
 
-#### [5] VIEW ALL GROUPS WITH OUTSTANDING BALANCE
+#### [6] VIEW ALL GROUPS WITH OUTSTANDING BALANCE
 - Displays all the instances of GROUP that has money owed greater than zero
 
 ## [3] EXPENSE
