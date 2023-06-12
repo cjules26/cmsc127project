@@ -106,8 +106,11 @@ def insertExpense(create_cursor, create_cursor_commit):
     sender = None
     while (True):
         sender = input("\nEnter expense sender ID: ")
-        if (((sender != "U1" and gq.isUserIDValid(sender, create_cursor)) or gq.isGroupIDValid(sender, create_cursor)) == False):
-            print("Sender ID is not a valid ID")
+        if (((sender != "U1" and gq.isUserIDValid(sender, create_cursor))) == False):
+            if gq.isGroupIDValid(sender, create_cursor):
+                print("Group to group expenses are not allowed!")
+            else:
+                print("Sender ID is not a valid ID")
         else:
             break
 
