@@ -30,7 +30,7 @@ def addUser(create_cursor, commit):
         insert = (userID, fName, lName, 0, 0, "U1")
         create_cursor.execute(sql_statement, insert)
     print("\nSuccessfully added Person!\n")
-    commit
+    commit()
 
 
 def updateFirstName(id, create_cursor, commit):
@@ -42,7 +42,7 @@ def updateFirstName(id, create_cursor, commit):
     sql_statement = "UPDATE person SET fName = %s WHERE userID = %s"
     insert = (new_first_name, id)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print(f"\nSuccessfully updated {id}'s First Name!\n")
 
 
@@ -55,7 +55,7 @@ def updateLastName(id, create_cursor, commit):
     sql_statement = "UPDATE person SET lName = %s WHERE userID = %s"
     insert = (new_last_name, id)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print(f"\nSuccessfully updated {id}'s Last Name!\n")
 
 
@@ -84,7 +84,7 @@ def updatePersonMoneyOwed(id, create_cursor, commit):
         create_cursor.execute(update_statement, insert)
         create_cursor.execute(updateMoneyLent, (owed_difference,))
         create_cursor.execute(updateMoneyOwed, (owed_difference,))
-        commit
+        commit()
         print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
     except:
         print(f"FAILED TO UPDATE {id}'s MONEY OWED")
@@ -113,7 +113,7 @@ def updatePersonMoneyLent(id, create_cursor, commit):
         updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed + %s where userID= 'U1'"
         create_cursor.execute(update_statement, insert)
         create_cursor.execute(updateMoneyOwed, (lent_difference,))
-        commit
+        commit()
         print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
     except:
         print(f"FAILED TO UPDATE {id}'s MONEY LENT")
@@ -225,7 +225,7 @@ def deletePerson(create_cursor, commit):
         sql_statement = "DELETE from person where userID = %s"
         create_cursor.execute(updateMoneyOwed,(lent,))
         create_cursor.execute(sql_statement,(id,))
-        commit
+        commit()
         print("Successfully deleted!")
     except:
         print("\nCANNOT DELETE PERSON BECAUSE IT IS REFERENCED AS A FOREIGN KEY")    

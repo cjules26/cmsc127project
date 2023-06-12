@@ -222,7 +222,7 @@ def insertExpense(create_cursor, create_cursor_commit):
             sql_statement = "UPDATE person SET moneyOwed=moneyOwed+%s WHERE userID=%s"
             create_cursor.execute(sql_statement, (amount, recipient))
 
-    create_cursor_commit
+    create_cursor_commit()
 
 
 def deleteExpense(create_cursor, create_cursor_commit):
@@ -230,7 +230,7 @@ def deleteExpense(create_cursor, create_cursor_commit):
     if (gq.isExpenseIDValid(selected_expenseId, create_cursor)):
         sql_statement = "DELETE from expense where expenseID = %s"
         create_cursor.execute(sql_statement, (selected_expenseId,))
-        create_cursor_commit
+        create_cursor_commit()
         print(
             f"EXPENSE ID {selected_expenseId} has been successfully deleted!")
     else:
@@ -290,7 +290,7 @@ def updateExpenseAmount(id, create_cursor, create_cursor_commit):
             sql_statement = "UPDATE person SET moneyOwed=moneyOwed+%s-%s WHERE userID=%s"
             create_cursor.execute(sql_statement, (new_amount, old_amount, recipient))
 
-    create_cursor_commit
+    create_cursor_commit()
 
 
 def updateExpenseSender(id, create_cursor, create_cursor_commit):
@@ -389,7 +389,7 @@ def updateExpenseSender(id, create_cursor, create_cursor_commit):
             print("\nSUCCESSFULLY UPDATED SENDER!")
             break
     
-    create_cursor_commit
+    create_cursor_commit()
 
 def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
     statement = "SELECT sender, recipient, amount, datePaid from EXPENSE where expenseID = %s"
@@ -506,7 +506,7 @@ def updateExpenseRecipient(id, create_cursor, create_cursor_commit):
             print("\nSUCCESSFULLY UPDATED RECIPIENT!")
             break
 
-    create_cursor_commit
+    create_cursor_commit()
 
 
 def updateDateOwed(id, create_cursor, create_cursor_commit):
@@ -530,7 +530,7 @@ def updateDateOwed(id, create_cursor, create_cursor_commit):
             print("Invalid date!")
     sql_statement = "UPDATE EXPENSE SET dateOwed = %s where expenseID = %s"
     create_cursor.execute(sql_statement, (new_date_owed, id))
-    create_cursor_commit
+    create_cursor_commit()
 
 
 def updateDatePaid(id, create_cursor, create_cursor_commit):
@@ -636,7 +636,7 @@ def updateDatePaid(id, create_cursor, create_cursor_commit):
         else:
             print("Invalid choice!")
 
-    create_cursor_commit
+    create_cursor_commit()
 
 
 def updateExpense(create_cursor, create_cursor_commit):

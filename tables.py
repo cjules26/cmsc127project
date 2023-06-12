@@ -75,7 +75,7 @@ def createDatabase(create_cursor, create_cursor_commit):
     for statement in statements:
         create_cursor.execute(statement)
 
-    create_cursor_commit
+    create_cursor_commit()
 
     create_cursor.execute("SHOW TABLES")
 

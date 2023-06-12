@@ -28,7 +28,7 @@ def addGroup(create_cursor, commit):
     sql_statement = 'INSERT INTO GROUPING VALUES(%s,%s,%s,%s)'
     insert = (next_id,groupName,0,0)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print("\nSUCCESSFULLY ADDED NEW GROUP!")
 
 def updateGroupName(id,create_cursor, commit):
@@ -40,7 +40,7 @@ def updateGroupName(id,create_cursor, commit):
     sql_statement = "UPDATE grouping SET groupName = %s WHERE groupID = %s"
     insert = (new_group_name, id)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s GROUP NAME to {new_group_name}!\n")
 
 def updateGroupMoneyOwed(id,create_cursor, commit):
@@ -58,7 +58,7 @@ def updateGroupMoneyOwed(id,create_cursor, commit):
     sql_statement = "UPDATE grouping SET moneyOwed = %s WHERE groupID = %s"
     insert = (updated_money_owed, id)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
 
 def updateGroupMoneyLent(id,create_cursor, commit):
@@ -76,7 +76,7 @@ def updateGroupMoneyLent(id,create_cursor, commit):
     sql_statement = "UPDATE grouping SET moneyLent = %s WHERE groupID = %s"
     insert = (updated_money_lent, id)
     create_cursor.execute(sql_statement, insert)
-    commit
+    commit()
     print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY LENT!\n")
 
 def showUpdateGroupMenu(create_cursor, commit):
@@ -124,7 +124,7 @@ def deleteGroup(create_cursor, commit):
         try:
             # create_cursor.execute(update, (personMoneyOwed,),(groupMoneyLent, (selected_groupId,)))
             create_cursor.execute(del_statement, (selected_groupId,))
-            commit
+            commit()
             print(f"SUCCESSFULLY DELETED GROUP {selected_groupId}!")
         except:
             print("\nCANNOT DELETE GROUP BECAUSE IT IS REFERENCED AS A FOREIGN KEY")

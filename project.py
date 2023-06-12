@@ -12,7 +12,9 @@ def menu():
     mariadb_connection = mariadb.connect(
         user='root', password=pword, host='localhost', port='3306')
     create_cursor = mariadb_connection.cursor(buffered=True)
-    create_cursor_commit = mariadb_connection.commit()
+
+    def create_cursor_commit():
+        mariadb_connection.commit()
 
     t.createDatabase(create_cursor, create_cursor_commit)
 
