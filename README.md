@@ -121,7 +121,7 @@ This app helps user track their expenses made within a friend, or group
 #### [1] INSERT EXPENSE
 - Adds a new expense to the database.
 - Asks for EXPENSE amount
-- If the recipient of the expense is group, GROUP's ID is asked, otherwise, recipient is U1
+- Recipient of the expense is always U1
 - Asks for sender ID that is either a USER or a GROUP and must not be equal to recipient ID and must not be U1
 - Asks for a valid date owed
 - If the expense was paid, asks for a valid date paid
@@ -129,7 +129,7 @@ This app helps user track their expenses made within a friend, or group
 - Automatically configures foreign keys after setting inputs
 - If the expense is not paid, increases money lent and money owed by sender and recipient, respectively, by the amount of the expense
 - User ID foreign key exists if a USER is either a recipient or sender of an expense. If a USER is a sender, User ID foreign key is equal to the sender ID, otherwise, equal to recipient ID
-- Group ID foreign key exists if a GROUP is either a recipient or sender of an expense. If a GROUP is a sender, Group ID foreign key is equal to the sender ID, otherwise, equal to recipient ID
+- Group ID foreign key exists if a GROUP is a sender of an expense. If a GROUP is a sender, Group ID foreign key is equal to the sender ID, otherwise, null
 
 #### [2] DELETE EXPENSE
 - Deletes an EXPENSE from the database
@@ -150,36 +150,16 @@ UPDATE SENDER (U is USER, G is GROUP)
 
 new_sender (sender, recipient) : current_User_ID = ____, current_Group_ID = _____ => Changes on foreign keys 
 U (U1, U2) : UID = U1, GID = null => UID = U
-U (U1, G1) : UID = U1, GID = G1 => UID = U
 U (G1, U1) : UID = U1, GID = G1 => GID = null, UID = U
-U (G1, G2) : UID = null, GID = G1 => UID = U, GID = G2
 
 G (U1, U2) : UID = U1, GID = null => UID = U2, GID = G
-G (U1, G1) : UID = U1, GID = G1 => UID = null, GID = G
 G (G1, U1) : UID = U1, GID = G1 => GID = G
-G (G1, G2) : UID = null, GID = G1 => GID = G
 
-##### [3] UPDATE RECEIVER
-- Updates sender ID of an EXPENSE to a new senderID
-- Automatically configures foreign key changes
-
-new_sender (sender, recipient) : current_User_ID = ____, current_Group_ID = _____ => Changes on foreign keys 
-UPDATE RECEIVER
-U (U1, U2) : UID = U1, GID = null => (no changes on foreign keys)
-U (U1, G1) : UID = U1, GID = G1 => GID = null
-U (G1, U1) : UID = U1, GID = G1 => UID = U
-U (G1, G2) : UID = null, GID = G1 => UID = U
-
-G (U1, U2) : UID = U1, GID = null => GID = G
-G (U1, G1) : UID = U1, GID = G1 => GID = G
-G (G1, U1) : UID = U1, GID = G1 => UID = null
-G (G1, G2) : UID = null, GID = G1 => (no changes on foreign keys)
-
-##### [4] UPDATE DATE OWED
+##### [3] UPDATE DATE OWED
 - Updates date owed of an EXPENSE
 - If the expense is already paid, new date owed must be a date on or before date paid  
 
-##### [5] UPDATE DATE OWED
+##### [4] UPDATE DATE PAID
 - Updates date paid of an EXPENSE
 - If date paid is previously null, sets the expense as paid and automatically updates the money lent and money owed of the sender and receiver, respectively.
 - New date paid must be a date on or after date owed
