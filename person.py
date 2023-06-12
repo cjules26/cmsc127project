@@ -80,10 +80,10 @@ def updatePersonMoneyOwed(id, create_cursor, commit):
         update_statement = "UPDATE person SET moneyOwed = %s WHERE userID = %s"
         insert = (updated_money_owed, id)
         updateMoneyLent = "UPDATE person set moneyLent = moneyLent + %s where userID= 'U1'"
-        #updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed - %s where userId = 'U1'"
+        updateMoneyOwed = "UPDATE person set moneyOwed = moneyOwed - %s where userId = 'U1'"
         create_cursor.execute(update_statement, insert)
         create_cursor.execute(updateMoneyLent, (owed_difference,))
-        #create_cursor.execute(updateMoneyOwed, (owed_difference,))
+        create_cursor.execute(updateMoneyOwed, (owed_difference,))
         commit()
         print(f"\nSUCCESSFULLY UPDATED {id}'s MONEY OWED!\n")
     except:
@@ -141,7 +141,7 @@ def showUpdatePersonMenu(create_cursor, commit):
         print("[3] Update Money Owed")
         print("[4] Update Money Lent")
 
-        choice = input("Please enter choice: ")
+        choice = input("\nPlease enter choice: ")
 
         if (choice == "1"):
             updateFirstName(id, create_cursor, commit)
