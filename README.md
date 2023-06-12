@@ -13,7 +13,7 @@ This app helps user track their expenses made within a friend, or group
 # To run the program:
 1. Open your terminal then run pip install my-sql-connector <br>
 2. Run pip install tabulate <br>
-3. Run the program <br>
+3. Run app/project.py <br>
 4. Enter your mariadb password <br>
 
 # NOTES: 
