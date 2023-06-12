@@ -170,11 +170,18 @@ def insertExpense(create_cursor, create_cursor_commit):
 def deleteExpense(create_cursor, create_cursor_commit):
     selected_expenseId = input("Enter Expense ID: ")
     if (gq.isExpenseIDValid(selected_expenseId, create_cursor)):
-        sql_statement = "DELETE from expense where expenseID = %s"
+        sql_statement = "SELECT datePaid from expense where expenseID = %s"
         create_cursor.execute(sql_statement, (selected_expenseId,))
-        create_cursor_commit()
-        print(
-            f"EXPENSE ID {selected_expenseId} has been successfully deleted!")
+        result = create_cursor.fetchone()[0]
+        datePaid = True if result[0] else False
+        if (datePaid):
+            sql_statement = "DELETE from expense where expenseID = %s"
+            create_cursor.execute(sql_statement, (selected_expenseId,))
+            create_cursor_commit()
+            print(
+                f"EXPENSE ID {selected_expenseId} has been successfully deleted!")
+        else:
+            print("CANNOT DELETE AN UNPAID EXPENSE!")
     else:
         print(f"EXPENSE ID {selected_expenseId} was not found!")
 
@@ -213,7 +220,8 @@ def updateExpenseAmount(id, create_cursor, create_cursor_commit):
             #update sender values
             sql_statement = "UPDATE person SET moneyOwed=moneyOwed+%s-%s WHERE userID=%s"
             create_cursor.execute(sql_statement, (new_amount, old_amount, recipient))
-
+    
+    print("\nSUCCESSFULLY UPDATED EXPENSE AMOUNT!")
     create_cursor_commit()
 
 
